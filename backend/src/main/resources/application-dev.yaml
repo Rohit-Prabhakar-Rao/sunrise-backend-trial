@@ -1,0 +1,36 @@
+server:
+  port: 3000
+
+spring:
+  application:
+    name: inventory-management-system
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # MUST match the Issuer in your React app and the ngrok tunnel
+          issuer-uri: https://substructional-kalel-unchampioned.ngrok-free.dev/realms/sunrise-realm
+          # Backend needs to fetch public keys from the secure ngrok link
+          jwk-set-uri: https://substructional-kalel-unchampioned.ngrok-free.dev/realms/sunrise-realm/protocol/openid-connect/certs
+
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=SunriseIGZ;encrypt=true;trustServerCertificate=true;
+    username: sa
+    password: StrongPassword123!
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.SQLServerDialect
+
+logging:
+  level:
+    org.springframework.web: INFO
+    org.hibernate: INFO

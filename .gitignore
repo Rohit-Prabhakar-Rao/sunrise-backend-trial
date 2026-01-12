@@ -1,0 +1,22 @@
+### GLOBAL ###
+.DS_Store
+.idea
+.vscode
+*.log
+
+### FRONTEND (React) ###
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env
+frontend/.env.local
+
+### BACKEND (Java/Spring) ###
+backend/target/
+backend/**/*.class
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+backend/*.iml
+# Ignore backend secrets
+backend/src/main/resources/application-dev.yml

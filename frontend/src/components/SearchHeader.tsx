@@ -1,0 +1,129 @@
+import { Search, Grid3x3, List, FileSpreadsheet } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CardConfigDialog, CardFieldConfig } from "@/components/CardConfigDialog";
+import { CartDrawer } from "@/components/CartDrawer";
+import { UserMenu } from "@/components/UserMenu";
+
+interface SearchHeaderProps {
+  viewMode: "grid" | "list";
+  onViewModeChange: (mode: "grid" | "list") => void;
+  sortBy: string;
+  onSortChange: (value: string) => void;
+  resultCount: number;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  cardConfig: CardFieldConfig;
+  onCardConfigChange: (config: CardFieldConfig) => void;
+  onExport: () => void;
+}
+
+export const SearchHeader = ({
+  viewMode,
+  onViewModeChange,
+  sortBy,
+  onSortChange,
+  resultCount,
+  searchQuery,
+  onSearchChange,
+  cardConfig,
+  onCardConfigChange,
+  onExport,
+}: SearchHeaderProps) => {
+  return (
+    <div className="bg-card border-b border-border sticky top-0 z-10 shadow-sm">
+      <div className="p-4 space-y-3">
+        {/* --- ROW 1: SEARCH BAR --- */}
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by polymer, grade, supplier, PO, container..."
+              className="pl-10 h-10 bg-background border-border"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* --- ROW 2: CONTROLS --- */}
+        <div className="flex items-center justify-between">
+          
+          {/* LEFT SIDE: Results & Sort */}
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-muted-foreground hidden sm:block">
+              <span className="font-bold text-foreground text-sm">{resultCount}</span> results
+            </p>
+            <div className="h-4 w-px bg-border hidden sm:block" />
+            <Select value={sortBy} onValueChange={onSortChange}>
+              <SelectTrigger className="w-[160px] h-9 bg-background border-border text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recent">Recently Added</SelectItem>
+                <SelectItem value="quantity-high">Quantity: High to Low</SelectItem>
+                <SelectItem value="quantity-low">Quantity: Low to High</SelectItem>
+                <SelectItem value="supplier">Supplier A-Z</SelectItem>
+                <SelectItem value="polymer">Polymer Type</SelectItem>
+                <SelectItem value="lot">Lot Number</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* RIGHT SIDE: Actions */}
+          <div className="flex items-center gap-2">
+            
+            {/* 1. EXPORT BUTTON */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden md:flex gap-2 mr-2"
+              onClick={onExport}
+            >
+              <FileSpreadsheet className="h-4 w-4 text-green-600" />
+              Export
+            </Button>
+
+            {/* 2. Shopping Cart */}
+            <CartDrawer />
+            
+            {/* 3. Card Settings */}
+            <CardConfigDialog config={cardConfig} onConfigChange={onCardConfigChange} />
+            
+            {/* 4. View Mode Toggle */}
+            <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-md">
+              <Button
+                variant={viewMode === "grid" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => onViewModeChange("grid")}
+                className="h-7 w-7 px-0"
+              >
+                <Grid3x3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => onViewModeChange("list")}
+                className="h-7 w-7 px-0"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* 5. Divider & User Menu */}
+            <div className="h-6 w-px bg-border mx-1" />
+            <UserMenu />
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

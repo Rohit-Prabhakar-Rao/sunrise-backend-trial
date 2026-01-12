@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  sunrise-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sunrise-db
+    restart: always
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=StrongPassword123!
+    ports:
+      - "1433:1433"
+    volumes:
+      - backend_mssql_data:/var/opt/mssql
+
+  sunrise-auth:
+    image: quay.io/keycloak/keycloak:23.0.0 # Keeping version same as your log
+    container_name: sunrise-auth
+    restart: always
+    command: start-dev
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_PROXY=edge
+      - KC_HOSTNAME_STRICT=false
+    ports:
+      - "8090:8080"
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+
+volumes:
+  backend_mssql_data:
+    external: true
+  keycloak_data:
+    external: true

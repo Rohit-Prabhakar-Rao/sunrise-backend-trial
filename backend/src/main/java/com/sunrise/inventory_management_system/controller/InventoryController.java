@@ -1,0 +1,63 @@
+package com.sunrise.inventory_management_system.controller;
+
+import com.sunrise.inventory_management_system.dto.InventoryDTO;
+import com.sunrise.inventory_management_system.dto.InventorySearchCriteria;
+import com.sunrise.inventory_management_system.service.ExcelService;
+import com.sunrise.inventory_management_system.service.InventoryService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = {"http://localhost:8080", "http://localhost:8081"}, allowCredentials = "true")
+@RequiredArgsConstructor
+public class InventoryController {
+    private final InventoryService service;
+
+    @Autowired
+    private ExcelService excelService;
+
+    @GetMapping("/inventory")
+    public Map<String, List<InventoryDTO>> getInventory(
+            InventorySearchCriteria criteria,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size,
+            @RequestParam(defaultValue = "recent") String sort
+    ) {
+        List<InventoryDTO> results = service.searchInventory(criteria, page, size, sort);
+
+        Map<String, List<InventoryDTO>> response = new HashMap<>();
+        response.put("data", results);
+        return response;
+    }
+
+    @GetMapping("/inventory/{id}")
+    public InventoryDTO getInventoryById(@PathVariable Long id) {
+        return service.getInventoryById(id);
+    }
+
+    @GetMapping("/inventory/export")
+    public ResponseEntity<InputStreamResource> exportInventory(
+            InventorySearchCriteria criteria,
+            @RequestParam(defaultValue = "recent") String sort
+    ) {
+        List<InventoryDTO> results = service.searchInventory(criteria, 0, 100000, sort);
+        java.io.ByteArrayInputStream in = excelService.exportInventoryToExcel(results);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=inventory_export.xlsx");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(new InputStreamResource(in));
+    }
+}
