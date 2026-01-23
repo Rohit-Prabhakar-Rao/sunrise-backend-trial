@@ -1,7 +1,7 @@
-import { Package, User, ShoppingCart, Check } from "lucide-react";
+import { Package, User } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox"; 
 import {
   Carousel,
   CarouselContent,
@@ -12,36 +12,25 @@ import {
 import { InventoryItem } from "@/lib/inventoryData";
 import { CardFieldConfig } from "@/components/CardConfigDialog";
 import { format } from "date-fns";
-import { useNavigate } from "react-router-dom";
-import { useCartStore } from "@/lib/cartStore";
-import { toast } from "sonner";
+// Removed useNavigate import
+import { cn } from "@/lib/utils";
 
 interface InventoryCardProps {
   item: InventoryItem;
   config: CardFieldConfig;
+  isSelected?: boolean;
+  onToggle?: () => void;
 }
 
-export const InventoryCard = ({ item, config }: InventoryCardProps) => {
+export const InventoryCard = ({ 
+  item, 
+  config, 
+  isSelected = false, 
+  onToggle 
+}: InventoryCardProps) => {
   const hasImages = item.sampleImages && item.sampleImages.length > 0;
-  const navigate = useNavigate();
 
-  const addItem = useCartStore((state) => state.addItem);
-  
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    addItem({
-      id: item.id || `inv-${item.inventoryId}`,
-      panId: String(item.panId),
-      lot: item.lot?.toString() || "Unknown",
-      grade: item.gradeCode || "Unknown",
-      quantity: item.availableQty || 0,
-    });
-
-    toast.success(`Added ${item.gradeCode} (Lot: ${item.lot}) to cart`);
-  };
-
-  // Get status background color (darker pastel)
+  // Helper to get status colors
   const getStatusBgColor = (status: string) => {
     if (status === "Available") {
       return "bg-green-200 dark:bg-green-900/40 border border-green-300 dark:border-green-800/50";
@@ -55,64 +44,58 @@ export const InventoryCard = ({ item, config }: InventoryCardProps) => {
     return "bg-muted/30";
   };
 
-  // Parse customer codes (comma-separated string)
-  const parseCustomerCodes = (codes: string | null | undefined): string[] => {
-    if (!codes) return [];
-    return codes.split(",").map((c) => c.trim()).filter((c) => c.length > 0);
-  };
+  // Parsing Helpers
+  const parseList = (str: string | null | undefined) => 
+    str ? str.split(",").map(s => s.trim()).filter(s => s.length > 0) : [];
 
-  // Parse allocation IDs (comma-separated string)
-  const parseAllocationIds = (ids: string | null | undefined): string[] => {
-    if (!ids) return [];
-    return ids.split(",").map((id) => id.trim()).filter((id) => id.length > 0);
-  };
-
-  // Parse book numbers (comma-separated string)
-  const parseBookNums = (nums: string | null | undefined): string[] => {
-    if (!nums) return [];
-    return nums.split(",").map((num) => num.trim()).filter((num) => num.length > 0);
-  };
-
-  // Parse container numbers (comma-separated string)
-  const parseContNums = (nums: string | null | undefined): string[] => {
-    if (!nums) return [];
-    return nums.split(",").map((num) => num.trim()).filter((num) => num.length > 0);
-  };
-
-  // Parse sales order types (comma-separated string)
-  const parseSOTypes = (types: string | null | undefined): string[] => {
-    if (!types) return [];
-    return types.split(",").map((type) => type.trim()).filter((type) => type.length > 0);
-  };
-
-  // Get allocated customers with allocation level info
-  const getAllocatedCustomers = () => {
-    const customers: Array<{ code: string; level: "pan" | "inventory" | "both" }> = [];
+  const allocatedCustomers = (() => {
+    const pan = parseList(item.panLevelCustomerCodes);
+    const inv = parseList(item.inventoryLevelCustomerCodes);
+    const all = parseList(item.allocatedCustomerCodes);
+    const unique = new Set([...pan, ...inv, ...all]);
     
-    const panCustomers = parseCustomerCodes(item.panLevelCustomerCodes);
-    const inventoryCustomers = parseCustomerCodes(item.inventoryLevelCustomerCodes);
-    const allCustomers = parseCustomerCodes(item.allocatedCustomerCodes);
-
-    // Combine and deduplicate
-    const allUnique = new Set([...panCustomers, ...inventoryCustomers, ...allCustomers]);
-    
-    allUnique.forEach((code) => {
-      const isPan = panCustomers.includes(code);
-      const isInventory = inventoryCustomers.includes(code);
-      const level = isPan && isInventory ? "both" : isPan ? "pan" : "inventory";
-      customers.push({ code, level });
-    });
-
-    return customers;
-  };
-
-  const allocatedCustomers = getAllocatedCustomers();
+    return Array.from(unique).map(code => ({
+        code,
+        level: pan.includes(code) && inv.includes(code) ? "both" : pan.includes(code) ? "pan" : "inventory"
+    }));
+  })();
 
   return (
-    <Card onClick={() => navigate(`/inventory/${item.panId}`)}
-      className="group overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-300 border border-border hover:border-red-500 bg-card h-full flex flex-col">
-      
-      <div className="aspect-[4/3] bg-gradient-to-br from-primary/5 to-accent/5 relative overflow-hidden border-b border-border">
+    <Card 
+      className={cn(
+        "group overflow-hidden transition-all duration-300 h-full flex flex-col relative",
+        isSelected 
+          ? "border-2 border-primary ring-2 ring-primary/20 shadow-lg scale-[1.02]" 
+          : "border border-border hover:shadow-lg bg-card"
+      )}
+    >
+      {/* Visual Overlay for selection */}
+      {isSelected && (
+         <div className="absolute inset-0 bg-primary/5 pointer-events-none z-0" />
+      )}
+
+      <div className="aspect-[4/3] bg-gradient-to-br from-primary/5 to-accent/5 relative overflow-hidden border-b border-border z-10">
+        
+        {/* Checkbox */}
+        {onToggle && (
+            <div 
+                className="absolute top-2 right-2 z-50"
+                // Stop propagation to ensure checking the box doesn't trigger other events (if any)
+                onClick={(e) => e.stopPropagation()} 
+            >
+                <Checkbox 
+                    checked={isSelected}
+                    onCheckedChange={() => onToggle()}
+                    className={cn(
+                        "h-5 w-5 border-2 transition-all shadow-sm",
+                        isSelected 
+                           ? "bg-primary border-primary text-primary-foreground" 
+                           : "bg-background/80 backdrop-blur-sm border-muted-foreground/50 hover:border-primary"
+                    )}
+                />
+            </div>
+        )}
+
         {hasImages ? (
           <Carousel className="w-full h-full absolute inset-0">
             <CarouselContent className="h-full -ml-0">
@@ -120,20 +103,20 @@ export const InventoryCard = ({ item, config }: InventoryCardProps) => {
                 <CarouselItem key={index} className="pl-0 basis-full h-full">
                   <img
                     src={imageUrl}
-                    alt={`${item.polymerCode} sample ${index + 1}`}
+                    alt={`${item.polymerCode} sample`}
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = "none";
-                    }}
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                   />
                 </CarouselItem>
               ))}
             </CarouselContent>
             {item.sampleImages.length > 1 && (
               <>
-                <CarouselPrevious className="left-2" />
-                <CarouselNext className="right-2" />
+                {/* Added click stopping to carousel buttons just in case */}
+                <div onClick={(e) => e.stopPropagation()}>
+                    <CarouselPrevious className="left-2 bg-background/50 hover:bg-background/80 border-none" />
+                    <CarouselNext className="right-2 bg-background/50 hover:bg-background/80 border-none" />
+                </div>
               </>
             )}
           </Carousel>
@@ -142,53 +125,62 @@ export const InventoryCard = ({ item, config }: InventoryCardProps) => {
             <Package className="h-20 w-20 text-primary/20 group-hover:scale-110 transition-transform duration-300" />
           </div>
         )}
+        
+        {/* Form Code Badge */}
         {config.formCode && (
-          <div className="absolute top-2 right-2 z-10">
-            <Badge className="bg-primary text-primary-foreground text-xs font-semibold">
+          <div className="absolute top-2 left-2 z-10">
+            <Badge className="bg-primary text-primary-foreground text-xs font-semibold shadow-sm">
               {item.formCode}
             </Badge>
           </div>
         )}
+
+        {/* Warehouse Badge */}
         {config.warehouse && (
           <div className="absolute bottom-2 left-2 z-10">
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs backdrop-blur-md bg-background/80">
               {item.warehouseName || item.locationGroup}
             </Badge>
           </div>
         )}
-        
-        {item.availableQty > 0 && (
-          <div className="absolute bottom-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button 
-                size="sm" 
-                className="rounded-full shadow-lg" 
-                onClick={handleAddToCart}
-            >
-                <ShoppingCart className="h-4 w-4 mr-1" /> Add
-            </Button>
-          </div>
-        )}
       </div>
 
-      <div className="p-4 space-y-3 flex-1">
-        {config.polymerCode && (
-          <div>
-            <h3 className="font-bold text-base text-foreground mb-1 group-hover:text-primary transition-colors">
-              {item.polymerCode}
-            </h3>
+      <div className="p-4 space-y-3 flex-1 z-10 relative">
+        {/* Creates the Row Layout */}
+        <div className="flex justify-between items-start w-full gap-2">
+          
+          {/* LEFT SIDE: Polymer & Grade */}
+          <div className="flex items-baseline gap-2 min-w-0">
+            {config.polymerCode && (
+              <h3 
+                className="font-bold text-base text-foreground truncate" 
+                title={item.polymerCode}
+              >
+                {item.polymerCode}
+              </h3>
+            )}
+            
+            {/* Render Grade beside Polymer, italicized (slanting) */}
             {config.gradeCode && item.gradeCode && (
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">
+              <span 
+                className="text-xs text-muted-foreground italic font-medium truncate shrink-0"
+                title={(item.gradeCode)}
+              >
                 {item.gradeCode}
-              </p>
+              </span>
             )}
           </div>
-        )}
 
-        {config.brand && item.brand && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-primary">{item.brand}</span>
-          </div>
-        )}
+          {/* RIGHT SIDE: Brand */}
+          {config.brand && item.brand && (
+            <div className="flex shrink-0">
+              <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded-md border border-primary/20">
+                {item.brand}
+              </span>
+            </div>
+          )}
+          
+        </div>
 
         {(config.quantity || config.compartment) && (
           <div className="flex items-center justify-between py-2 border-y border-border">
@@ -205,7 +197,7 @@ export const InventoryCard = ({ item, config }: InventoryCardProps) => {
               <div className="text-center flex-1">
                 <p className="text-xs text-muted-foreground mb-0.5">Location</p>
                 <p className="text-sm font-bold text-foreground">
-                  {item.compartment || "N/A"}
+                  {item.locationGroup || "N/A"}
                 </p>
               </div>
             )}
@@ -216,26 +208,20 @@ export const InventoryCard = ({ item, config }: InventoryCardProps) => {
           <div className="grid grid-cols-3 gap-2 pt-2">
             {config.density && (
               <div className="text-center p-2 rounded bg-muted/30">
-                <p className="text-[10px] text-muted-foreground mb-0.5 uppercase">Density</p>
-                <p className="text-xs font-semibold text-foreground">
-                  {item.density != null ? item.density.toFixed(2) : "N/A"}
-                </p>
+                <p className="text-[10px] text-muted-foreground uppercase">Density</p>
+                <p className="text-xs font-semibold">{item.density?.toFixed(2) || "N/A"}</p>
               </div>
             )}
             {config.mi && (
               <div className="text-center p-2 rounded bg-muted/30">
-                <p className="text-[10px] text-muted-foreground mb-0.5 uppercase">MI</p>
-                <p className="text-xs font-semibold text-foreground">
-                  {item.mi != null ? item.mi.toFixed(2) : "N/A"}
-                </p>
+                <p className="text-[10px] text-muted-foreground uppercase">MI</p>
+                <p className="text-xs font-semibold">{item.mi?.toFixed(2) || "N/A"}</p>
               </div>
             )}
             {config.izod && (
               <div className="text-center p-2 rounded bg-muted/30">
-                <p className="text-[10px] text-muted-foreground mb-0.5 uppercase">Izod</p>
-                <p className="text-xs font-semibold text-foreground">
-                  {item.izod != null ? item.izod : "N/A"}
-                </p>
+                <p className="text-[10px] text-muted-foreground uppercase">Izod</p>
+                <p className="text-xs font-semibold">{item.izod || "N/A"}</p>
               </div>
             )}
           </div>
@@ -270,13 +256,13 @@ export const InventoryCard = ({ item, config }: InventoryCardProps) => {
             <div className="flex justify-between">
               <span className="text-muted-foreground">Date:</span>
               <span className="font-medium text-foreground">
-                {format(item.date, "MMM dd, yyyy")}
+                {item.panDate ? format(new Date(item.panDate), "MMM dd, yyyy") : "-"}
               </span>
             </div>
           )}
           {config.folderCode && (
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Folder:</span>
+              <span className="text-muted-foreground">Folder Code:</span>
               <span className="font-medium text-foreground">{item.folderCode}</span>
             </div>
           )}
@@ -295,7 +281,13 @@ export const InventoryCard = ({ item, config }: InventoryCardProps) => {
           {config.panId && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">Pan ID:</span>
-              <span className="font-medium text-foreground font-mono">{item.panId.toLocaleString()}</span>
+              <span className="font-medium text-foreground">{item.panId.toLocaleString()}</span>
+            </div>
+          )}
+          {config.compartment && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Compartment:</span>
+              <span className="font-medium text-foreground">{item.rcCompartment}</span>
             </div>
           )}
           {config.allocationStatus && (
@@ -308,12 +300,10 @@ export const InventoryCard = ({ item, config }: InventoryCardProps) => {
               <span className="font-medium text-foreground">{item.allocationStatus}</span>
             </div>
           )}
-          {config.overAllocatedBy && item.overAllocatedBy > 0 && (
-            <div className="flex justify-between p-2 rounded bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800/40">
+          {config.overAllocatedBy && (
+            <div className="flex justify-between">
               <span className="text-muted-foreground">Over Allocated By:</span>
-              <span className="font-medium text-foreground font-semibold text-red-700 dark:text-red-400">
-                {item.overAllocatedBy.toLocaleString()}
-              </span>
+              <span className="font-medium text-foreground">{item.overAllocatedBy}</span>
             </div>
           )}
           {config.packLeft && (
@@ -325,125 +315,53 @@ export const InventoryCard = ({ item, config }: InventoryCardProps) => {
           {config.weightLeft && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">Weight Left:</span>
-              <span className="font-medium text-foreground">{item.weightLeft.toLocaleString()}</span>
+              <span className="font-medium text-foreground">{item.weightLeft}</span>
             </div>
           )}
-          {config.comment && item.comment && (
+          {config.comment && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">Comment:</span>
-              <span className="font-medium text-foreground text-right max-w-[60%] truncate" title={item.comment}>
-                {item.comment}
-              </span>
+              <span className="font-medium text-foreground">{item.comment}</span>
+            </div>
+          )}
+          {config.allocationIds && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Allocated Allocation IDs:</span>
+              <span className="font-medium text-foreground">{item.allocatedAllocationIds}</span>
+            </div>
+          )}
+          {config.bookNums && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Allocated Book Numbers:</span>
+              <span className="font-medium text-foreground">{item.allocatedBookNums}</span>
+            </div>
+          )}
+          {config.contNums && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Allocated Container Numbers:</span>
+              <span className="font-medium text-foreground">{item.allocatedContNums}</span>
+            </div>
+          )}
+          {config.soTypes && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Allocated SO Types:</span>
+              <span className="font-medium text-foreground">{item.allocatedSOtypes}</span>
             </div>
           )}
         </div>
-
-        {/* Allocated Customers Section */}
+        
         {config.allocatedCustomers && allocatedCustomers.length > 0 && (
           <div className="pt-2 border-t border-border">
             <div className="p-2 rounded bg-muted/30 w-full">
               <div className="flex items-center gap-2 mb-2">
                 <User className="h-3 w-3 text-muted-foreground" />
-                <p className="text-[10px] text-muted-foreground uppercase font-semibold">
-                  Allocated Customers
-                </p>
+                <p className="text-[10px] text-muted-foreground uppercase font-semibold">Allocated Customers</p>
               </div>
               <div className="space-y-1">
                 {allocatedCustomers.map((customer, idx) => (
                   <div key={idx} className="flex items-center justify-between text-xs">
                     <span className="font-medium text-foreground">{customer.code}</span>
-                    <span className="text-muted-foreground text-[10px]">
-                      {customer.level === "both"
-                        ? "Pan & Inventory"
-                        : customer.level === "pan"
-                        ? "Pan Level"
-                        : "Inventory Level"}
-                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Allocation IDs Section */}
-        {config.allocationIds && item.allocatedAllocationIds && (
-          <div className="pt-2 border-t border-border">
-            <div className="p-2 rounded bg-muted/30 w-full">
-              <div className="flex items-center gap-2 mb-2">
-                <Package className="h-3 w-3 text-muted-foreground" />
-                <p className="text-[10px] text-muted-foreground uppercase font-semibold">
-                  Allocation IDs
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {parseAllocationIds(item.allocatedAllocationIds).map((id, idx) => (
-                  <Badge key={idx} variant="outline" className="text-xs font-mono">
-                    {id}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Book Numbers Section */}
-        {config.bookNums && item.allocatedBookNums && (
-          <div className="pt-2 border-t border-border">
-            <div className="p-2 rounded bg-muted/30 w-full">
-              <div className="flex items-center gap-2 mb-2">
-                <Package className="h-3 w-3 text-muted-foreground" />
-                <p className="text-[10px] text-muted-foreground uppercase font-semibold">
-                  Book Numbers
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {parseBookNums(item.allocatedBookNums).map((num, idx) => (
-                  <Badge key={idx} variant="outline" className="text-xs font-mono">
-                    {num}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Container Numbers Section */}
-        {config.contNums && item.allocatedContNums && (
-          <div className="pt-2 border-t border-border">
-            <div className="p-2 rounded bg-muted/30 w-full">
-              <div className="flex items-center gap-2 mb-2">
-                <Package className="h-3 w-3 text-muted-foreground" />
-                <p className="text-[10px] text-muted-foreground uppercase font-semibold">
-                  Container Numbers
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {parseContNums(item.allocatedContNums).map((num, idx) => (
-                  <Badge key={idx} variant="outline" className="text-xs font-mono">
-                    {num}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Sales Order Types Section */}
-        {config.soTypes && item.allocatedSOtypes && (
-          <div className="pt-2 border-t border-border">
-            <div className="p-2 rounded bg-muted/30 w-full">
-              <div className="flex items-center gap-2 mb-2">
-                <Package className="h-3 w-3 text-muted-foreground" />
-                <p className="text-[10px] text-muted-foreground uppercase font-semibold">
-                  Sales Order Types
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {parseSOTypes(item.allocatedSOtypes).map((type, idx) => (
-                  <Badge key={idx} variant="outline" className="text-xs font-mono">
-                    {type}
-                  </Badge>
                 ))}
               </div>
             </div>

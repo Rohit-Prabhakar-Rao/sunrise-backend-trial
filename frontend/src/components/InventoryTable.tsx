@@ -11,14 +11,43 @@ import {
 } from "@/components/ui/table";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { User } from "lucide-react";
 
 interface InventoryTableProps {
   items: InventoryItem[];
   config: CardFieldConfig;
+  selectedIds: string[];
+  onSelectionChange: (ids: string[]) => void;
 }
 
-export const InventoryTable = ({ items, config }: InventoryTableProps) => {
+export const InventoryTable = ({ 
+  items, 
+  config, 
+  selectedIds, 
+  onSelectionChange 
+}: InventoryTableProps) => {
+  
+  // Selection Logic Helpers
+  const isAllSelected = items.length > 0 && selectedIds.length === items.length;
+  const isIndeterminate = selectedIds.length > 0 && selectedIds.length < items.length;
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      onSelectionChange(items.map((item) => item.id));
+    } else {
+      onSelectionChange([]);
+    }
+  };
+
+  const handleSelectRow = (id: string, checked: boolean) => {
+    if (checked) {
+      onSelectionChange([...selectedIds, id]);
+    } else {
+      onSelectionChange(selectedIds.filter((selectedId) => selectedId !== id));
+    }
+  };
+
   // Determine which columns to show based on config
   const columns = [
     { key: "polymerCode", label: "Polymer", show: config.polymerCode },
@@ -124,7 +153,7 @@ export const InventoryTable = ({ items, config }: InventoryTableProps) => {
       case "warehouseName":
         return item.warehouseName || item.locationGroup || "N/A";
       case "compartment":
-        return item.compartment || "N/A";
+        return item.rcCompartment || "N/A";
       case "density":
         return item.density != null ? item.density.toFixed(2) : "N/A";
       case "mi":
@@ -134,11 +163,11 @@ export const InventoryTable = ({ items, config }: InventoryTableProps) => {
       case "brand":
         return item.brand || "N/A";
       case "date":
-        return format(item.date, "MMM dd, yyyy");
+        return item.panDate ? format(new Date(item.panDate), "MMM dd, yyyy") : "N/A";
       case "folderCode":
         return item.folderCode;
       case "lot":
-        return item.lot.toString();
+        return item.lot ? item.lot.toString() : "N/A";
       case "lotName":
         return item.lotName;
       case "panId":
@@ -173,9 +202,9 @@ export const InventoryTable = ({ items, config }: InventoryTableProps) => {
         }
         return "—";
       case "packLeft":
-        return item.packLeft.toString();
+        return item.packLeft ? item.packLeft.toLocaleString() : "N/A";
       case "weightLeft":
-        return item.weightLeft.toLocaleString();
+        return item.weightLeft ? item.weightLeft.toLocaleString() : "N/A";
       case "comment":
         return item.comment || "N/A";
       case "allocatedCustomers": {
@@ -265,6 +294,14 @@ export const InventoryTable = ({ items, config }: InventoryTableProps) => {
       <Table>
         <TableHeader className="sticky top-0 z-10 bg-card">
           <TableRow className="border-b border-border hover:bg-transparent">
+            {/* Header Checkbox */}
+            <TableHead className="w-[50px] bg-muted/50 border-r border-border px-3 py-2">
+               <Checkbox 
+                 checked={isAllSelected || isIndeterminate}
+                 onCheckedChange={handleSelectAll}
+                 aria-label="Select all"
+               />
+            </TableHead>
             {columns.map((column) => (
               <TableHead
                 key={column.key}
@@ -276,24 +313,36 @@ export const InventoryTable = ({ items, config }: InventoryTableProps) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map((item) => (
-            <TableRow
-              key={item.id}
-              className="hover:bg-muted/30 border-b border-border last:border-b-0"
-            >
-              {columns.map((column) => (
-                <TableCell
-                  key={column.key}
-                  className="whitespace-nowrap border-r border-border last:border-r-0 px-3 py-2 text-sm"
-                >
-                  {getCellValue(item, column.key)}
+          {items.map((item) => {
+            const isSelected = selectedIds.includes(item.id);
+            return (
+              <TableRow
+                key={item.id}
+                className={`border-b border-border last:border-b-0 transition-colors ${
+                    isSelected ? "bg-muted/50" : "hover:bg-muted/30"
+                }`}
+              >
+                {/* Row Checkbox */}
+                <TableCell className="border-r border-border px-3 py-2 text-center">
+                    <Checkbox 
+                        checked={isSelected}
+                        onCheckedChange={(checked) => handleSelectRow(item.id, checked as boolean)}
+                        aria-label={`Select item ${item.id}`}
+                    />
                 </TableCell>
-              ))}
-            </TableRow>
-          ))}
+                {columns.map((column) => (
+                  <TableCell
+                    key={column.key}
+                    className="whitespace-nowrap border-r border-border last:border-r-0 px-3 py-2 text-sm"
+                  >
+                    {getCellValue(item, column.key)}
+                  </TableCell>
+                ))}
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>
   );
 };
-

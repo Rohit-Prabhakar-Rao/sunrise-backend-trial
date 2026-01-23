@@ -1,35 +1,96 @@
+#version: '3.8'
+#
+#services:
+#  sunrise-db:
+#    image: mcr.microsoft.com/mssql/server:2022-latest
+#    container_name: sunrise-db
+#    restart: always
+#    environment:
+#      - ACCEPT_EULA=Y
+#      - MSSQL_SA_PASSWORD=StrongPassword123!
+#    ports:
+#      - "1433:1433"
+#    volumes:
+#      - backend_mssql_data:/var/opt/mssql
+#
+#  sunrise-auth:
+#    image: quay.io/keycloak/keycloak:23.0.0 # Keeping version same as your log
+#    container_name: sunrise-auth
+#    restart: always
+#    command: start-dev
+#    environment:
+#      - KEYCLOAK_ADMIN=admin
+#      - KEYCLOAK_ADMIN_PASSWORD=admin
+#      - KC_PROXY=edge
+#      - KC_HOSTNAME_STRICT=false
+#    ports:
+#      - "8090:8080"
+#    volumes:
+#      - keycloak_data:/opt/keycloak/data
+#
+#volumes:
+#  backend_mssql_data:
+#    external: true
+#  keycloak_data:
+#    external: true
+
 version: '3.8'
 
 services:
-  sunrise-db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: sunrise-db
-    restart: always
-    environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=StrongPassword123!
-    ports:
-      - "1433:1433"
-    volumes:
-      - backend_mssql_data:/var/opt/mssql
-
+  # -----------------------------------------------------------
+  # KEYCLOAK (HTTPS ENABLED)
+  # -----------------------------------------------------------
   sunrise-auth:
-    image: quay.io/keycloak/keycloak:23.0.0 # Keeping version same as your log
-    container_name: sunrise-auth
+    image: quay.io/keycloak/keycloak:23.0.0
+    container_name: keycloak_https
     restart: always
-    command: start-dev
+
+    # 1. Enable HTTPS
+    command: start-dev --https-port=8443
+
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
-      - KC_PROXY=edge
+
+      # REMOVED: KC_PROXY=edge (This was causing the issue!)
+
+      # Tell Keycloak: "You are accessible at this exact URL"
+      - KC_HOSTNAME_URL=https://localhost:8443
+      - KC_HOSTNAME_ADMIN_URL=https://localhost:8443
+
+      # Allow self-signed certs and simple hostname checks
       - KC_HOSTNAME_STRICT=false
+      - KC_HOSTNAME_STRICT_HTTPS=false
+
+      # Cert Config
+      - KC_HTTPS_CERTIFICATE_FILE=/opt/keycloak/conf/keycloak.crt
+      - KC_HTTPS_CERTIFICATE_KEY_FILE=/opt/keycloak/conf/keycloak.key
+
     ports:
-      - "8090:8080"
+      - "8443:8443"  # Secure Port
+      - "8090:8080"  # HTTP Port
+
     volumes:
+      # 3. Keep existing data
       - keycloak_data:/opt/keycloak/data
 
+      # 4. Mount the certificates
+      - ./docker-conf/certs/keycloak.crt:/opt/keycloak/conf/keycloak.crt:ro
+      - ./docker-conf/certs/keycloak.key:/opt/keycloak/conf/keycloak.key:ro
+
+    # Ensure it joins the same network as your running DB
+    networks:
+      - default
+
+# -----------------------------------------------------------
+# EXTERNAL RESOURCES
+# -----------------------------------------------------------
 volumes:
-  backend_mssql_data:
-    external: true
   keycloak_data:
+    external: true
+
+networks:
+  default:
+    # This tells Docker: "Join the existing network, don't create a new one"
+    name: backend_default
     external: true

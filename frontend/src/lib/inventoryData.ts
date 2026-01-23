@@ -32,7 +32,7 @@ export interface RawInventoryItem {
   whname: string;
   WHsection?: string | null;
   LocationGroup: string;
-  rc_compartment: string;
+  rcCompartment: string;
   Package: number;
   PanLevelAllocated: number;
   InventoryLevelAllocated: number;
@@ -74,7 +74,7 @@ export interface RawInventoryItem {
 export interface InventoryItem {
   id: string;
   panId: number;
-  date: Date;
+  panDate: Date;
   inventoryId: number;
   supplierId: number;
   supplierCode: string;
@@ -104,7 +104,7 @@ export interface InventoryItem {
   warehouseName: string;
   warehouseSection?: string | null;
   locationGroup: string;
-  compartment: string;
+  rcCompartment: string;
   package: number;
   panLevelAllocated: number;
   inventoryLevelAllocated: number;
@@ -238,7 +238,7 @@ export function getQuantityRange(inventory: InventoryItem[]): [number, number] {
 export function getDateRange(inventory: InventoryItem[]): [Date, Date] | null {
   if (inventory.length === 0) return null;
   const dates = inventory
-    .map((item) => item.date)
+    .map((item) => item.panDate)
     .filter((d) => d != null)
     .map((d) => d instanceof Date ? d : new Date(d));
   

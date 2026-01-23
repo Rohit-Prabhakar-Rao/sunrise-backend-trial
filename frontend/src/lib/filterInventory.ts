@@ -5,7 +5,7 @@ export interface FilterState {
   polymers: string[];
   forms: string[];
   grades: string[];
-  folders: string[];
+  locations: string[];
   warehouses: string[];
   dateRange: { from: Date | undefined; to: Date | undefined };
   miRange: { from: number | undefined; to: number | undefined };
@@ -51,8 +51,8 @@ export function filterInventory(
       }
     }
 
-    // Folder filter
-    if (filters.folders.length > 0 && !filters.folders.includes(item.folderCode)) {
+    // Location filter
+    if (filters.locations.length > 0 && !filters.locations.includes(item.locationGroup)) {
       return false;
     }
 
@@ -68,7 +68,7 @@ export function filterInventory(
 
     // Date range filter
     if (filters.dateRange.from || filters.dateRange.to) {
-      const itemDate = item.date instanceof Date ? item.date : new Date(item.date);
+      const itemDate = item.panDate instanceof Date ? item.panDate : new Date(item.panDate);
       if (filters.dateRange.from) {
         const fromDate = filters.dateRange.from instanceof Date ? filters.dateRange.from : new Date(filters.dateRange.from);
         if (itemDate < fromDate) {

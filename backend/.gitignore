@@ -38,3 +38,15 @@ src/main/resources/application-dev.yml
 src/main/resources/application-stag.yml
 .env
 env.properties
+
+# Security: Certificates and Keys
+*.p12
+*.jks
+*.keystore
+*.crt
+*.key
+*.pem
+
+# Configuration: Docker specific configs
+docker-conf/
+.env

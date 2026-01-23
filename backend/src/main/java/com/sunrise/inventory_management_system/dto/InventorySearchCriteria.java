@@ -1,6 +1,8 @@
 package com.sunrise.inventory_management_system.dto;
 
 import lombok.Data;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -11,11 +13,12 @@ public class InventorySearchCriteria {
 
     // --- Multi-Select Filters (Checkboxes) ---
     private List<String> polymerCodes;
-    private List<String> formCodes;     // Pellets, Granules
-    private List<String> gradeCodes;    // Injection, Blow Molding
-    private List<String> suppliers;     // Supplier Codes
+    private List<String> formCodes;
+    private List<String> gradeCodes;
+    private List<String> suppliers;
     private List<String> warehouseNames;
     private List<String> locationGroups;
+    private List<String> lots;
 
     // --- Range Filters (Sliders) ---
     // Melt Index
@@ -32,4 +35,20 @@ public class InventorySearchCriteria {
 
     // --- Boolean / Status Flags ---
     private Boolean onlyAvailable;
+
+    private Boolean qcMi;
+    private Boolean qcDensity;
+    private Boolean qcIzod;
+
+    // Quantity Range
+    private Double minQty;
+    private Double maxQty;
+
+    // "Include N/A with Range"
+    private Boolean includeNAMI;
+    private Boolean includeNADensity;
+    private Boolean includeNAIzod;
+
+    private LocalDate startDate;
+    private LocalDate endDate;
 }

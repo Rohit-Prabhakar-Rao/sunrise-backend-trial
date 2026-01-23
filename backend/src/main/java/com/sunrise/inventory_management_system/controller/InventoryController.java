@@ -7,6 +7,7 @@ import com.sunrise.inventory_management_system.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,15 +28,15 @@ public class InventoryController {
     private ExcelService excelService;
 
     @GetMapping("/inventory")
-    public Map<String, List<InventoryDTO>> getInventory(
+    public Map<String, Slice<InventoryDTO>> getInventory(
             InventorySearchCriteria criteria,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size,
             @RequestParam(defaultValue = "recent") String sort
     ) {
-        List<InventoryDTO> results = service.searchInventory(criteria, page, size, sort);
+        Slice<InventoryDTO> results = service.searchInventory(criteria, page, size, sort);
 
-        Map<String, List<InventoryDTO>> response = new HashMap<>();
+        Map<String, Slice<InventoryDTO>> response = new HashMap<>();
         response.put("data", results);
         return response;
     }
@@ -50,8 +51,9 @@ public class InventoryController {
             InventorySearchCriteria criteria,
             @RequestParam(defaultValue = "recent") String sort
     ) {
-        List<InventoryDTO> results = service.searchInventory(criteria, 0, 100000, sort);
-        java.io.ByteArrayInputStream in = excelService.exportInventoryToExcel(results);
+        Slice<InventoryDTO> pageResults = service.searchInventory(criteria, 0, 100000, sort);
+        java.io.ByteArrayInputStream in = excelService.exportInventoryToExcel(pageResults.getContent());
+
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=inventory_export.xlsx");
 
@@ -59,5 +61,10 @@ public class InventoryController {
                 .headers(headers)
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(new InputStreamResource(in));
+    }
+
+    @GetMapping("/inventory/filters")
+    public Map<String, List<String>> getFilterValues() {
+        return service.getFilterValues();
     }
 }

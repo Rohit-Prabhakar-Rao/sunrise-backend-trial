@@ -21,7 +21,6 @@ export function CartDrawer() {
   const totalQty = items.reduce((acc, item) => acc + item.quantity, 0);
 
   const handleCheckout = () => {
-    // This is where you would send the data to the Backend later
     console.log("Checkout Items:", items);
     toast.success("Order submitted! (Simulation)");
     clearCart();
@@ -46,7 +45,7 @@ export function CartDrawer() {
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
-            Shopping Cart ({items.length})
+            Compare Cart ({items.length})
           </SheetTitle>
         </SheetHeader>
         

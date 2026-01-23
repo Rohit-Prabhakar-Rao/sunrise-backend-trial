@@ -44,3 +44,12 @@ logging:
   level:
     org.springframework.web: INFO
     org.hibernate: INFO
+
+smb:
+  server:
+    ip: "172.29.80.1"
+  share:
+    name: "SunriseImages"
+  username: "Rohit Prabhakar"
+  password: "Flamekaiser@14"
+  domain: ""

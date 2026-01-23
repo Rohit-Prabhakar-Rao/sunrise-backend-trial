@@ -1,19 +1,28 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useCartStore } from "@/lib/cartStore";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useAuth } from "react-oidc-context";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
+import { ArrowLeft, X, Loader2, Printer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { useReactToPrint } from "react-to-print";
 
 const ComparePage = () => {
   const { items, clearCart, removeItem } = useCartStore();
   const auth = useAuth();
   const navigate = useNavigate();
+  
+  // Create the Ref for the area you want to print
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Setup the Print Function
+  const handlePrint = useReactToPrint({
+      contentRef,
+      documentTitle: "Sunrise_Inventory_Comparison",
+  });
 
   const { data: fullItems, isLoading } = useQuery({
     queryKey: ["compare-items", items],
@@ -45,7 +54,7 @@ const ComparePage = () => {
     );
   }
 
-  // --- CONFIGURATION ---
+  // Define rows to compare
   const specs = [
     { label: "Supplier", key: "supplierCode" },
     { label: "Grade", key: "gradeCode", highlight: true },
@@ -63,8 +72,8 @@ const ComparePage = () => {
     <div className="min-h-screen bg-gray-50/50 p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
         
-        {/* Header Actions */}
-        <div className="flex justify-between items-center bg-white p-4 rounded-lg border shadow-sm">
+        {/* --- HEADER (Hidden in PDF) --- */}
+        <div className="flex justify-between items-center bg-white p-4 rounded-lg border shadow-sm print:hidden">
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={() => navigate("/")}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back
@@ -72,51 +81,68 @@ const ComparePage = () => {
             <h1 className="text-2xl font-bold hidden md:block">Compare Products</h1>
           </div>
           <div className="flex gap-2">
+            <Button 
+                variant="outline" 
+                onClick={() => handlePrint()}
+                className="gap-2 border-blue-200 text-blue-700 hover:bg-blue-50"
+            >
+                <Printer className="h-4 w-4" /> Export PDF
+            </Button>
+            
             <Button variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => clearCart()}>
                Clear All
             </Button>
           </div>
         </div>
 
-        {/* COMPARISON TABLE */}
-        <div className="border rounded-xl bg-white shadow-lg overflow-hidden relative">
-            <ScrollArea className="w-full">
-                <div className="w-full min-w-max"> 
-                    <table className="w-full text-sm text-left border-collapse">
+        {/* --- COMPARISON TABLE (Ref attached here) --- */}
+        <div ref={contentRef} className="print-container border rounded-xl bg-white shadow-lg overflow-hidden relative">
+            
+            {/* PDF HEADER: Visible only when printing */}
+            <div className="hidden print:block p-6 pb-2 border-b mb-4">
+                <h1 className="text-xl font-bold text-gray-900">Sunrise Inventory Report</h1>
+                <p className="text-xs text-gray-500">
+                    Generated on {new Date().toLocaleDateString()}
+                </p>
+            </div>
+
+            {/* ScrollArea with PRINT overrides */}
+            <ScrollArea className="w-full h-full print:h-auto print:overflow-visible">
+                <div className="w-full min-w-max print:min-w-0 print:w-full"> 
+                    
+                    <table className="w-full text-sm text-left border-collapse print:table-fixed">
                         <thead>
                             <tr className="border-b bg-gray-50/80">
-                                {/* STICKY HEADER COLUMN */}
-                                <th className="p-4 w-[200px] sticky left-0 bg-gray-50 z-20 border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] align-top pt-12">
-                                    <span className="font-bold text-gray-700 text-lg">Properties</span>
-                                    <p className="text-xs text-gray-400 font-normal mt-1">
+                                {/* ATTRIBUTE HEADER */}
+                                <th className="p-4 w-[200px] print:w-[100px] sticky left-0 bg-gray-50 z-20 border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] align-top pt-12 print:static print:shadow-none print:pt-4">
+                                    <span className="font-bold text-gray-700 text-lg print:text-sm">Properties</span>
+                                    <p className="text-xs text-gray-400 font-normal mt-1 print:hidden">
                                         Compare specs side-by-side
                                     </p>
                                 </th>
                                 
-                                {/* PRODUCT HEADERS (With Mini Gallery) */}
+                                {/* PRODUCT COLUMNS */}
                                 {fullItems?.map((item: any) => (
-                                    <th key={item.inventoryId} className="p-4 min-w-[300px] w-[300px] align-top relative group border-r">
-                                        {/* Remove Button */}
+                                    <th key={item.inventoryId} className="p-4 min-w-[300px] w-[300px] print:w-auto print:min-w-0 align-top relative group border-r">
+                                        
+                                        {/* Remove Button (Hidden in Print) */}
                                         <button 
                                             onClick={() => removeItem(item.id || `inv-${item.inventoryId}`)}
-                                            className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                                            title="Remove"
+                                            className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10 print:hidden"
                                         >
                                             <X className="h-4 w-4" />
                                         </button>
 
                                         <div className="space-y-3">
-                                            {/* Product Title */}
                                             <div>
-                                                <div className="text-lg font-bold text-gray-900 leading-tight">
+                                                <div className="text-lg font-bold text-gray-900 leading-tight print:text-sm">
                                                     {item.polymerCode}
                                                 </div>
-                                                <Badge variant="secondary" className="mt-1 font-mono text-xs">
+                                                <Badge variant="secondary" className="mt-1 font-mono text-xs border-gray-200 print:text-[10px] print:px-1">
                                                     {item.gradeCode}
                                                 </Badge>
                                             </div>
                                             
-                                            {/* IMAGE GALLERY COMPONENT */}
                                             <ProductImageGallery images={item.sampleImages} />
                                         </div>
                                     </th>
@@ -127,7 +153,7 @@ const ComparePage = () => {
                         <tbody className="divide-y">
                             {specs.map((spec, idx) => (
                                 <tr key={spec.key} className={`group hover:bg-blue-50/30 transition-colors ${spec.highlight ? "bg-blue-50/50" : ""}`}>
-                                    <td className="p-4 font-medium text-gray-500 sticky left-0 bg-white z-10 border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] group-hover:bg-blue-50/30">
+                                    <td className="p-4 font-medium text-gray-500 sticky left-0 bg-white z-10 border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] group-hover:bg-blue-50/30 print:static print:shadow-none">
                                         {spec.label}
                                     </td>
                                     {fullItems?.map((item: any) => {
@@ -146,8 +172,9 @@ const ComparePage = () => {
                             ))}
                         </tbody>
                     </table>
+
                 </div>
-                <ScrollBar orientation="horizontal" />
+                <ScrollBar orientation="horizontal" className="print:hidden" />
             </ScrollArea>
         </div>
       </div>
@@ -155,34 +182,29 @@ const ComparePage = () => {
   );
 };
 
-// This handles the state for just ONE product column
+// --- IMAGE GALLERY COMPONENT ---
 const ProductImageGallery = ({ images }: { images: string[] }) => {
-    // If no images, show placeholder
     if (!images || images.length === 0) {
         return (
-            <div className="h-40 w-full bg-gray-100 rounded-md border border-dashed flex items-center justify-center text-gray-400 text-xs">
+            <div className="h-40 w-full bg-gray-100 rounded-md border border-dashed flex items-center justify-center text-gray-400 text-xs print:h-20">
                 No Image
             </div>
         );
     }
-
     const [activeImg, setActiveImg] = useState(images[0]);
 
     return (
         <div className="space-y-2">
-            {/* Main Active Image - FIXED HEIGHT & FULL COVER */}
-            <div className="h-40 w-full bg-gray-100 rounded-md border flex items-center justify-center overflow-hidden relative">
+            <div className="h-40 w-full bg-gray-100 rounded-md border flex items-center justify-center overflow-hidden relative print:h-24">
                 <img 
                     src={activeImg} 
                     alt="Product" 
-                    // CHANGED: object-cover fills the space, mix-blend-multiply helps white backgrounds blend
-                    className="h-full w-full object-cover" 
+                    className="h-full w-full object-cover print:object-contain" 
                 />
             </div>
-
-            {/* Thumbnail Strip (Only shows if > 1 image) */}
+            {/* Thumbnails (Hidden in Print to save space) */}
             {images.length > 1 && (
-                <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
+                <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide print:hidden">
                     {images.map((img, idx) => (
                         <button
                             key={idx}
@@ -201,4 +223,5 @@ const ProductImageGallery = ({ images }: { images: string[] }) => {
         </div>
     );
 };
+
 export default ComparePage;

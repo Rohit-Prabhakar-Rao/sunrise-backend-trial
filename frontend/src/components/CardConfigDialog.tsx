@@ -132,7 +132,7 @@ export const CardConfigDialog = ({ config, onConfigChange }: CardConfigDialogPro
     formCode: "Form Code",
     gradeCode: "Grade Code",
     supplierCode: "Supplier Code",
-    po: "Purchase Order",
+    po: "Purchase Order", // what to show
     containerNum: "Container Number",
     quantity: "Quantity",
     packing: "Packing",

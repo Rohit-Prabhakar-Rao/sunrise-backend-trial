@@ -15,36 +15,73 @@ public class InventoryMapper {
         if (entity == null) return null;
 
         return InventoryDTO.builder()
-                // The composite ID logic from Node.js
                 .id("pan-" + entity.getPanId() + "-inv-" + entity.getInventoryId())
 
                 .panId(entity.getPanId())
-//                .date(entity.getPanDate()) // You need to add PanDate to InventoryView entity first
+                .panDate(entity.getPanDate())
                 .inventoryId(entity.getInventoryId())
+                .folderId(entity.getFolderId())
+                .folderCode(entity.getFolderCode())
 
                 .supplierCode(entity.getSupplierCode())
                 .po(entity.getPurchaseOrder())
                 .containerNum(entity.getContainerNum())
 
+                .PolymerId(entity.getPolymerId())
                 .polymerCode(entity.getPolymerCode())
+                .gradeId(entity.getGradeId())
                 .gradeCode(entity.getGradeCode())
+                .brandId(entity.getBrandId())
                 .brand(entity.getBrand())
+                .formId(entity.getFormId())
                 .formCode(entity.getFormCode())
+                .lot(entity.getLot())
+                .lotName(entity.getLotName())
+                .comment(entity.getComment())
+                .supplierId(entity.getSupplierId())
 
                 .weightLeft(entity.getWeightLeft())
                 .availableQty(entity.getAvailableQty())
                 .allocationStatus(entity.getAllocationStatus())
                 .totalAllocated(entity.getTotalAllocated())
+                .allocationCount(entity.getAllocationCount())
+                .allocatedContNums(entity.getAllocatedContNums())
+                .overAllocatedBy(entity.getOverAllocatedBy())
+                .allocatedPOs(entity.getAllocatedPOs())
+                .allocatedCustomerCodes(entity.getAllocatedCustomerCodes())
+                .allocatedAllocationIds(entity.getAllocatedAllocationIDs())
+                .allocatedAllocationItemIDs(entity.getAllocatedAllocationItemIDs())
+                .allocatedBookNums(entity.getAllocatedBookNums())
+                .allocatedBookNums(entity.getAllocatedBookNums())
+                .allocatedSOtypes(entity.getAllocatedSOtypes())
+                .panLevelPOs(entity.getPanLevelPOS())
+                .panLevelCustomerCodes(entity.getPanLevelCustomerCodes())
+                .inventoryLevelPOS(entity.getInventoryLevelPOS())
+                .inventoryLevelCustomerCodes(entity.getInventoryLevelCustomerCodes())
 
+                .warehouse(entity.getWarehouse())
                 .warehouseName(entity.getWarehouseName())
+                .warehouseSection(entity.getWareHouseSection())
                 .locationGroup(entity.getLocationGroup())
-//                .compartment(entity.getCompartment())
+                .rcCompartment(entity.getRcCompartment())
+                .packageNumber(entity.getPackageNumber())
+
+                .packId(entity.getPackId())
+                .packLeft(entity.getPackLeft())
+                .partialLoad(entity.getPartialLoad())
+                .packing(entity.getPacking())
+                .descriptorId(entity.getDescriptorId())
+                .descriptor(entity.getDescriptor())
+
+                .panLevelAllocated(entity.getPanLevelAllocated())
+                .inventoryLevelAllocated(entity.getInventoryLevelAllocated())
 
                 .mi(entity.getMeltIndex())
                 .density(entity.getDensity())
                 .izod(entity.getIzodImpact())
 
                 // Image Parsing Logic
+                .images(parseImages(entity.getImages()))
                 .sampleImages(parseImages(entity.getImageFiles()))
 
                 .build();
@@ -68,12 +105,5 @@ public class InventoryMapper {
                     return IMAGE_API_BASE + cleanName;
                 })
                 .collect(Collectors.toList());
-    }
-
-    private boolean isWebImageFormat(String filename) {
-        if (filename == null) return false;
-        String lower = filename.toLowerCase();
-        return lower.endsWith(".jpg") || lower.endsWith(".jpeg") ||
-                lower.endsWith(".png") || lower.endsWith(".webp");
     }
 }

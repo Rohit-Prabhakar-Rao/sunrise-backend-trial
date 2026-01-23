@@ -40,7 +40,7 @@ export const SearchHeader = ({
   return (
     <div className="bg-card border-b border-border sticky top-0 z-10 shadow-sm">
       <div className="p-4 space-y-3">
-        {/* --- ROW 1: SEARCH BAR --- */}
+        {/* --- SEARCH BAR --- */}
         <div className="flex items-center gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -53,7 +53,7 @@ export const SearchHeader = ({
           </div>
         </div>
 
-        {/* --- ROW 2: CONTROLS --- */}
+        {/* --- CONTROLS --- */}
         <div className="flex items-center justify-between">
           
           {/* LEFT SIDE: Results & Sort */}
@@ -80,7 +80,7 @@ export const SearchHeader = ({
           {/* RIGHT SIDE: Actions */}
           <div className="flex items-center gap-2">
             
-            {/* 1. EXPORT BUTTON */}
+            {/* EXPORT BUTTON */}
             <Button
               variant="outline"
               size="sm"
@@ -91,13 +91,13 @@ export const SearchHeader = ({
               Export
             </Button>
 
-            {/* 2. Shopping Cart */}
+            {/* Compare Cart */}
             <CartDrawer />
             
-            {/* 3. Card Settings */}
+            {/* Card Settings */}
             <CardConfigDialog config={cardConfig} onConfigChange={onCardConfigChange} />
             
-            {/* 4. View Mode Toggle */}
+            {/* View Mode Toggle */}
             <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-md">
               <Button
                 variant={viewMode === "grid" ? "secondary" : "ghost"}
@@ -117,7 +117,7 @@ export const SearchHeader = ({
               </Button>
             </div>
 
-            {/* 5. Divider & User Menu */}
+            {/* Divider & User Menu */}
             <div className="h-6 w-px bg-border mx-1" />
             <UserMenu />
             

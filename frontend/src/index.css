@@ -108,6 +108,48 @@ All colors MUST be HSL.
   }
 }
 
+@media print {
+    /* 1. AUTO-ROTATE TO LANDSCAPE */
+    @page {
+        size: landscape;
+        margin: 10mm;
+    }
+
+    /* 2. DISABLE SCROLLING CLIPPING */
+    /* This forces the scroll area to expand to full width on paper */
+    [data-radix-scroll-area-viewport], .scroll-viewport {
+        overflow: visible !important;
+        width: 100% !important;
+    }
+    
+    .print-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%; /* Force full width */
+        max-width: none !important;
+        overflow: visible !important;
+    }
+
+    /* 3. FIT TO PAGE (Zoom out if table is huge) */
+    /* If 5 items are still too wide, this shrinks the table slightly */
+    table {
+        width: 100% !important;
+        table-layout: fixed; /* Ensures columns share space equally */
+    }
+    
+    /* Make text smaller to fit 5 columns */
+    td, th {
+        font-size: 10pt !important; 
+        padding: 4px !important;
+    }
+    
+    /* Hide the scrollbar track itself */
+    [data-radix-scroll-area-scrollbar] {
+        display: none !important;
+    }
+}
+
 @layer base {
   * {
     @apply border-border;

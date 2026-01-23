@@ -46,7 +46,7 @@ public class ExcelService {
                 );
 
                 row.createCell(1).setCellValue(
-                        item.getDate() != null ? item.getDate().toString() : ""
+                        item.getPanDate() != null ? item.getPanDate().toString() : ""
                 );
 
                 row.createCell(2).setCellValue(

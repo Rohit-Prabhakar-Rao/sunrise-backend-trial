@@ -58,7 +58,7 @@ const InventoryDetail = () => {
     return <div className="p-10 text-center">Item not found.</div>;
   }
 
-  // Helper for Add to Cart
+  // Helper for Add to Compare Cart
   const handleAddToCart = () => {
     addItem({
       id: item.id || `inv-${item.inventoryId}`,
@@ -67,7 +67,7 @@ const InventoryDetail = () => {
       quantity: item.availableQty,
       panId: item.panId,
     });
-    toast.success(`Added ${item.gradeCode} to cart`);
+    toast.success(`Added ${item.gradeCode} to compare`);
   };
 
   return (
@@ -154,7 +154,7 @@ const InventoryDetail = () => {
 
           <div className="flex gap-4 pt-4">
              <Button size="lg" className="w-full md:w-auto" onClick={handleAddToCart} disabled={item.availableQty <= 0}>
-                <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
+                <ShoppingCart className="mr-2 h-5 w-5" /> Add to Compare Cart
              </Button>
           </div>
 
