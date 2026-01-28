@@ -24,23 +24,23 @@ interface InventoryUiState {
 }
 
 const defaultFilters: FilterState = {
-    suppliers: [],
-    polymers: [],
-    forms: [],
-    grades: [],
-    locations: [],
-    warehouses: [],
-    dateRange: { from: undefined, to: undefined },
-    miRange: { from: undefined, to: undefined },
-    densityRange: { from: undefined, to: undefined },
-    izodRange: { from: undefined, to: undefined },
-    quantityRange: { from: undefined, to: undefined },
-    lots: [],
-    searchQuery: "",
-    includeNAMI: true,
-    includeNADensity: true,
-    includeNAIzod: true,
-    qualityControl: { mi: false, izod: false, density: false },
+  suppliers: [],
+  polymers: [],
+  forms: [],
+  grades: [],
+  locations: [],
+  warehouses: [],
+  dateRange: { from: undefined, to: undefined },
+  miRange: { from: undefined, to: undefined },
+  densityRange: { from: undefined, to: undefined },
+  izodRange: { from: undefined, to: undefined },
+  quantityRange: { from: undefined, to: undefined },
+  lots: [],
+  searchQuery: "",
+  includeNAMI: true,
+  includeNADensity: true,
+  includeNAIzod: true,
+  qualityControl: { mi: false, izod: false, density: false },
 };
 
 export const useInventoryUiStore = create<InventoryUiState>((set) => ({
@@ -48,8 +48,8 @@ export const useInventoryUiStore = create<InventoryUiState>((set) => ({
   setViewMode: (mode) => set({ viewMode: mode }),
 
   page: 0,
-  setPage: (page) => set((state) => ({ 
-    page: typeof page === 'function' ? page(state.page) : page 
+  setPage: (page) => set((state) => ({
+    page: typeof page === 'function' ? page(state.page) : page
   })),
 
   selectedItems: [],
@@ -66,8 +66,8 @@ export const useInventoryUiStore = create<InventoryUiState>((set) => ({
 
   filters: defaultFilters,
   //   setFilters: (filters) => set({ filters }),
-  setFilters: (filters) => set({ 
-      filters, 
-      page: 0
+  setFilters: (filters) => set({
+    filters,
+    page: 0
   })
 }));

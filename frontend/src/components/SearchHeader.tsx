@@ -11,6 +11,7 @@ import {
 import { CardConfigDialog, CardFieldConfig } from "@/components/CardConfigDialog";
 import { CartDrawer } from "@/components/CartDrawer";
 import { UserMenu } from "@/components/UserMenu";
+import { ModeToggle } from "@/components/mode-toggle";
 
 interface SearchHeaderProps {
   viewMode: "grid" | "list";
@@ -55,7 +56,7 @@ export const SearchHeader = ({
 
         {/* --- CONTROLS --- */}
         <div className="flex items-center justify-between">
-          
+
           {/* LEFT SIDE: Results & Sort */}
           <div className="flex items-center gap-3">
             <p className="text-xs text-muted-foreground hidden sm:block">
@@ -79,7 +80,7 @@ export const SearchHeader = ({
 
           {/* RIGHT SIDE: Actions */}
           <div className="flex items-center gap-2">
-            
+
             {/* EXPORT BUTTON */}
             <Button
               variant="outline"
@@ -93,10 +94,10 @@ export const SearchHeader = ({
 
             {/* Compare Cart */}
             <CartDrawer />
-            
+
             {/* Card Settings */}
             <CardConfigDialog config={cardConfig} onConfigChange={onCardConfigChange} />
-            
+
             {/* View Mode Toggle */}
             <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-md">
               <Button
@@ -117,10 +118,13 @@ export const SearchHeader = ({
               </Button>
             </div>
 
-            {/* Divider & User Menu */}
+            {/* Divider & Theme Toggle */}
             <div className="h-6 w-px bg-border mx-1" />
+            <ModeToggle />
+
+            {/* User Menu */}
             <UserMenu />
-            
+
           </div>
         </div>
       </div>

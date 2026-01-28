@@ -98,7 +98,7 @@ export function filterInventory(
     if (hasMIRange) {
       const miValue = item.mi;
       const isMIValid = miValue != null && typeof miValue === "number" && !isNaN(miValue);
-      
+
       if (!isMIValid) {
         // Item has N/A MI - only include if includeNAMI is true
         if (!filters.includeNAMI) {
@@ -129,7 +129,7 @@ export function filterInventory(
     if (hasDensityRange) {
       const densityValue = item.density;
       const isDensityValid = densityValue != null && typeof densityValue === "number" && !isNaN(densityValue);
-      
+
       if (!isDensityValid) {
         // Item has N/A Density - only include if includeNADensity is true
         if (!filters.includeNADensity) {
@@ -160,7 +160,7 @@ export function filterInventory(
     if (hasIzodRange) {
       const izodValue = item.izod;
       const isIzodValid = izodValue != null && typeof izodValue === "number" && !isNaN(izodValue);
-      
+
       if (!isIzodValid) {
         // Item has N/A Izod - only include if includeNAIzod is true
         if (!filters.includeNAIzod) {

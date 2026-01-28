@@ -21,13 +21,13 @@ interface InventoryTableProps {
   onSelectionChange: (ids: string[]) => void;
 }
 
-export const InventoryTable = ({ 
-  items, 
-  config, 
-  selectedIds, 
-  onSelectionChange 
+export const InventoryTable = ({
+  items,
+  config,
+  selectedIds,
+  onSelectionChange
 }: InventoryTableProps) => {
-  
+
   // Selection Logic Helpers
   const isAllSelected = items.length > 0 && selectedIds.length === items.length;
   const isIndeterminate = selectedIds.length > 0 && selectedIds.length < items.length;
@@ -114,14 +114,14 @@ export const InventoryTable = ({
   // Get allocated customers with allocation level info
   const getAllocatedCustomers = (item: InventoryItem): Array<{ code: string; level: "pan" | "inventory" | "both" }> => {
     const customers: Array<{ code: string; level: "pan" | "inventory" | "both" }> = [];
-    
+
     const panCustomers = parseCustomerCodes(item.panLevelCustomerCodes);
     const inventoryCustomers = parseCustomerCodes(item.inventoryLevelCustomerCodes);
     const allCustomers = parseCustomerCodes(item.allocatedCustomerCodes);
 
     // Combine and deduplicate
     const allUnique = new Set([...panCustomers, ...inventoryCustomers, ...allCustomers]);
-    
+
     allUnique.forEach((code) => {
       const isPan = panCustomers.includes(code);
       const isInventory = inventoryCustomers.includes(code);
@@ -220,8 +220,8 @@ export const InventoryTable = ({
                   {customer.level === "both"
                     ? "Pan & Inventory"
                     : customer.level === "pan"
-                    ? "Pan Level"
-                    : "Inventory Level"}
+                      ? "Pan Level"
+                      : "Inventory Level"}
                 </span>
               </div>
             ))}
@@ -290,59 +290,66 @@ export const InventoryTable = ({
   }
 
   return (
-    <div className="w-full overflow-auto border border-border rounded-md">
-      <Table>
-        <TableHeader className="sticky top-0 z-10 bg-card">
-          <TableRow className="border-b border-border hover:bg-transparent">
-            {/* Header Checkbox */}
-            <TableHead className="w-[50px] bg-muted/50 border-r border-border px-3 py-2">
-               <Checkbox 
-                 checked={isAllSelected || isIndeterminate}
-                 onCheckedChange={handleSelectAll}
-                 aria-label="Select all"
-               />
-            </TableHead>
-            {columns.map((column) => (
-              <TableHead
-                key={column.key}
-                className="font-semibold whitespace-nowrap bg-muted/50 border-r border-border last:border-r-0 px-3 py-2"
-              >
-                {column.label}
+    <div className="w-full h-full flex flex-col bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+      <div className="flex-1 overflow-auto relative scroll-smooth cursor-default">
+        <Table>
+          <TableHeader className="sticky top-0 z-20 bg-background/80 backdrop-blur-md shadow-sm">
+            <TableRow className="border-b border-border hover:bg-transparent">
+              {/* Header Checkbox */}
+              <TableHead className="w-[50px] px-4 py-3 text-center align-middle">
+                <Checkbox
+                  checked={isAllSelected || isIndeterminate}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all"
+                  className="translate-y-[2px]"
+                />
               </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {items.map((item) => {
-            const isSelected = selectedIds.includes(item.id);
-            return (
-              <TableRow
-                key={item.id}
-                className={`border-b border-border last:border-b-0 transition-colors ${
-                    isSelected ? "bg-muted/50" : "hover:bg-muted/30"
-                }`}
-              >
-                {/* Row Checkbox */}
-                <TableCell className="border-r border-border px-3 py-2 text-center">
-                    <Checkbox 
-                        checked={isSelected}
-                        onCheckedChange={(checked) => handleSelectRow(item.id, checked as boolean)}
-                        aria-label={`Select item ${item.id}`}
+              {columns.map((column) => (
+                <TableHead
+                  key={column.key}
+                  className="h-12 px-4 py-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase whitespace-nowrap"
+                >
+                  {column.label}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {items.map((item) => {
+              const isSelected = selectedIds.includes(item.id);
+              return (
+                <TableRow
+                  key={item.id}
+                  className={`
+                        group border-b border-border/50 last:border-b-0 transition-all duration-200
+                        ${isSelected ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted/30"}
+                        animate-in fade-in slide-in-from-bottom-2 duration-300
+                    `}
+                  style={{ animationDelay: `${items.indexOf(item) * 30}ms`, animationFillMode: 'both' }}
+                >
+                  {/* Row Checkbox */}
+                  <TableCell className="w-[50px] px-4 py-3 text-center align-middle">
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={(checked) => handleSelectRow(item.id, checked as boolean)}
+                      aria-label={`Select item ${item.id}`}
+                      className="translate-y-[2px]"
                     />
-                </TableCell>
-                {columns.map((column) => (
-                  <TableCell
-                    key={column.key}
-                    className="whitespace-nowrap border-r border-border last:border-r-0 px-3 py-2 text-sm"
-                  >
-                    {getCellValue(item, column.key)}
                   </TableCell>
-                ))}
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+                  {columns.map((column) => (
+                    <TableCell
+                      key={column.key}
+                      className="px-4 py-3 text-sm text-foreground whitespace-nowrap group-hover:text-foreground/90"
+                    >
+                      {getCellValue(item, column.key)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };

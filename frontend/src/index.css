@@ -1,153 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* 
+  MODERN SAAS DESIGN SYSTEM 
+  -------------------------
+  Font: Inter (Google Fonts)
+  Palette: Deep Indigo & Slate
+  Style: Clean, Airy, Glassmorphism
 */
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 215 25% 15%;
+    /* Base Colors - Slightly Cool White */
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
 
+    /* Cards - Pure White to pop against cool background */
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 222 47% 11%;
 
+    /* Popovers */
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 217 91% 45%;
-    --primary-foreground: 0 0% 100%;
+    /* PRIMARY: Vibrant Indigo (Modern Tech Feel) */
+    --primary: 226 70% 55%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 20% 95%;
-    --secondary-foreground: 215 25% 15%;
+    /* SECONDARY: Soft Slate/Blue Gray */
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 210 20% 95%;
-    --muted-foreground: 215 16% 50%;
+    /* MUTED: For subtler text */
+    --muted: 214 32% 91%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 180 75% 45%;
-    --accent-foreground: 0 0% 100%;
+    /* ACCENT: Cyan/Teal for highlights */
+    --accent: 188 78% 41%;
+    --accent-foreground: 210 40% 98%;
 
+    /* DESTRUCTIVE: Soft Red */
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 214 20% 88%;
-    --input: 214 20% 92%;
-    --ring: 217 91% 45%;
+    /* BORDERS & INPUTS */
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 226 70% 55%;
 
+    /* ROUNDING: Friendlier, larger radius */
     --radius: 0.75rem;
-    
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 45%), hsl(180 75% 45%));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 20% 98%));
-    
-    --shadow-card: 0 2px 8px hsla(215 25% 15% / 0.08);
-    --shadow-card-hover: 0 8px 24px hsla(215 25% 15% / 0.12);
-    
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
+    /* CUSTOM GRADIENTS */
+    --gradient-primary: linear-gradient(135deg, hsl(226 70% 55%), hsl(250 70% 60%));
+    --gradient-subtle: linear-gradient(180deg, hsl(210 40% 98%), hsl(210 40% 96%));
+
+    /* SHADOWS: Colored shadows for depth */
+    --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    --shadow-glow: 0 0 20px -5px hsla(226, 70%, 55%, 0.3);
+
+    /* Sidebar Variables (Light) */
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    --background: 215 30% 8%;
-    --foreground: 210 20% 95%;
+    /* Dark Mode - Neutral Slate/Gray (Professional) */
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
 
-    --card: 215 28% 12%;
-    --card-foreground: 210 20% 95%;
+    --card: 224 71% 6%;
+    --card-foreground: 213 31% 91%;
 
-    --popover: 215 28% 12%;
-    --popover-foreground: 210 20% 95%;
+    --popover: 224 71% 6%;
+    --popover-foreground: 213 31% 91%;
 
-    --primary: 217 91% 55%;
+    /* Primary stays vibrant for contrast */
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 215 25% 18%;
-    --secondary-foreground: 210 20% 95%;
+    --secondary: 215 28% 17%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 215 25% 18%;
-    --muted-foreground: 215 15% 65%;
+    --muted: 223 47% 11%;
+    --muted-foreground: 215 16% 65%;
 
-    --accent: 180 75% 50%;
+    --accent: 217 91% 60%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 70% 55%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 215 20% 22%;
-    --input: 215 20% 22%;
-    --ring: 217 91% 55%;
-    
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 55%), hsl(180 75% 50%));
-    --gradient-card: linear-gradient(180deg, hsl(215 28% 12%), hsl(215 25% 10%));
-    
-    --shadow-card: 0 2px 8px hsla(0 0% 0% / 0.3);
-    --shadow-card-hover: 0 8px 24px hsla(0 0% 0% / 0.4);
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --border: 215 28% 17%;
+    --input: 215 28% 17%;
+    --ring: 217 91% 60%;
+
+    --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 20px -5px hsla(217, 91%, 60%, 0.2);
+
+    /* Sidebar Variables (Dark) */
+    --sidebar-background: 224 71% 4%;
+    --sidebar-foreground: 213 31% 91%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 215 28% 17%;
+    --sidebar-accent-foreground: 213 31% 91%;
+    --sidebar-border: 215 28% 17%;
+    --sidebar-ring: 217 91% 60%;
   }
-}
-
-@media print {
-    /* 1. AUTO-ROTATE TO LANDSCAPE */
-    @page {
-        size: landscape;
-        margin: 10mm;
-    }
-
-    /* 2. DISABLE SCROLLING CLIPPING */
-    /* This forces the scroll area to expand to full width on paper */
-    [data-radix-scroll-area-viewport], .scroll-viewport {
-        overflow: visible !important;
-        width: 100% !important;
-    }
-    
-    .print-container {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%; /* Force full width */
-        max-width: none !important;
-        overflow: visible !important;
-    }
-
-    /* 3. FIT TO PAGE (Zoom out if table is huge) */
-    /* If 5 items are still too wide, this shrinks the table slightly */
-    table {
-        width: 100% !important;
-        table-layout: fixed; /* Ensures columns share space equally */
-    }
-    
-    /* Make text smaller to fit 5 columns */
-    td, th {
-        font-size: 10pt !important; 
-        padding: 4px !important;
-    }
-    
-    /* Hide the scrollbar track itself */
-    [data-radix-scroll-area-scrollbar] {
-        display: none !important;
-    }
 }
 
 @layer base {
@@ -155,7 +124,64 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground selection:bg-primary/20;
+  }
+
+  /* Custom Scrollbar for a premium feel */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full hover:bg-muted-foreground/50 transition-colors;
+  }
+}
+
+/* Print Styles Preserved */
+@media print {
+  @page {
+    size: landscape;
+    margin: 10mm;
+  }
+
+  [data-radix-scroll-area-viewport],
+  .scroll-viewport {
+    overflow: visible !important;
+    width: 100% !important;
+  }
+
+  .print-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: none !important;
+    overflow: visible !important;
+  }
+
+  table {
+    width: 100% !important;
+    table-layout: fixed;
+  }
+
+  td,
+  th {
+    font-size: 10pt !important;
+    padding: 4px !important;
+  }
+
+  [data-radix-scroll-area-scrollbar] {
+    display: none !important;
   }
 }

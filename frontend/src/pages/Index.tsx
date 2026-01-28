@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query"; 
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useAuth } from "react-oidc-context";
 import { FilterSidebar } from "@/components/FilterSidebar";
 import { SearchHeader } from "@/components/SearchHeader";
 import { InventoryCard } from "@/components/InventoryCard";
 import { InventoryTable } from "@/components/InventoryTable";
 import { loadConfig, CardFieldConfig } from "@/components/CardConfigDialog";
-import { Loader2, ShoppingCart, X, ChevronLeft, ChevronRight } from "lucide-react"; 
-import { Button } from "@/components/ui/button"; 
+import { Loader2, ShoppingCart, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { FilterState } from "@/lib/filterInventory";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "sonner";
-import { useCartStore } from "@/lib/cartStore"; 
+import { useCartStore } from "@/lib/cartStore";
 import { useInventoryUiStore } from "@/lib/inventoryUiStore";
 import { PaginationControls } from "@/components/PaginationControls";
 
@@ -22,8 +22,8 @@ const Index = () => {
   const [sortBy, setSortBy] = useState("recent");
   const [cardConfig, setCardConfig] = useState<CardFieldConfig>(loadConfig());
   const auth = useAuth();
-  
-  const { 
+
+  const {
     viewMode, setViewMode,
     page, setPage,
     selectedItems, toggleItem, clearSelection, setSelection,
@@ -47,31 +47,31 @@ const Index = () => {
 
   const handleAddToCart = () => {
     if (selectedItems.length === 0) return;
-    
+
     let addedCount = 0;
     selectedItems.forEach(item => {
-        addItem({
-            id: item.id,
-            panId: item.panId ? item.panId.toString() : "N/A",
-            lot: item.lot ? item.lot.toString() : "N/A",
-            grade: item.gradeCode || "Unknown",
-            quantity: item.availableQty || 0
-        });
-        addedCount++;
+      addItem({
+        id: item.id,
+        panId: item.panId ? item.panId.toString() : "N/A",
+        lot: item.lot ? item.lot.toString() : "N/A",
+        grade: item.gradeCode || "Unknown",
+        quantity: item.availableQty || 0
+      });
+      addedCount++;
     });
-    
+
     toast.success(`Added ${addedCount} items to compare`);
-    clearSelection(); 
+    clearSelection();
   };
 
   const { data: filterOptions } = useQuery({
     queryKey: ['filterOptions'],
     queryFn: async () => {
-        const token = auth.user?.access_token || "";
-        return api.getFilters(token);
+      const token = auth.user?.access_token || "";
+      return api.getFilters(token);
     },
     enabled: auth.isAuthenticated,
-    staleTime: 1000 * 60 * 15, 
+    staleTime: 1000 * 60 * 15,
   });
 
   const {
@@ -80,7 +80,7 @@ const Index = () => {
     isError,
     isPlaceholderData
   } = useQuery({
-    queryKey: ['inventory', appliedFilters, debouncedSort, page], 
+    queryKey: ['inventory', appliedFilters, debouncedSort, page],
     queryFn: async () => {
       const token = auth.user?.access_token || "";
       return api.getInventory({ ...appliedFilters, sortBy: debouncedSort }, page, token);
@@ -102,7 +102,7 @@ const Index = () => {
 
   // --- EXTRACT TOTALS ---
   const inventoryItems = data?.data || [];
-  const totalElements = data?.totalElements  || 0; 
+  const totalElements = data?.totalElements || 0;
   const totalPages = Math.ceil(totalElements / PAGE_SIZE);
 
   const hasNextPage = page < totalPages - 1;
@@ -119,18 +119,18 @@ const Index = () => {
   }
 
   if (isError) {
-      return <div className="p-10 text-center text-red-500">Error loading data. Check Backend Console.</div>;
+    return <div className="p-10 text-center text-red-500">Error loading data. Check Backend Console.</div>;
   }
   console.log('Item IDs:', inventoryItems.map(i => i.id));
 
   return (
     <div className="flex h-screen bg-background relative">
-      <FilterSidebar 
-        inventory={inventoryItems} 
-        filterOptions={filterOptions} 
-        filters={pendingFilters} 
-        onFiltersChange={setPendingFilters} 
-        onApply={handleApplyFilters} 
+      <FilterSidebar
+        inventory={inventoryItems}
+        filterOptions={filterOptions}
+        filters={pendingFilters}
+        onFiltersChange={setPendingFilters}
+        onApply={handleApplyFilters}
       />
 
       <main className="flex-1 flex flex-col overflow-hidden">
@@ -141,91 +141,91 @@ const Index = () => {
           onSortChange={setSortBy}
           // --- UPDATE HEADER COUNT ---
           resultCount={totalElements}
-          searchQuery={pendingFilters.searchQuery} 
-          onSearchChange={(query) => setPendingFilters({ ...pendingFilters, searchQuery: query })} 
+          searchQuery={pendingFilters.searchQuery}
+          onSearchChange={(query) => setPendingFilters({ ...pendingFilters, searchQuery: query })}
           cardConfig={cardConfig}
           onCardConfigChange={setCardConfig}
           onExport={handleExport}
         />
 
         <div className="flex-1 overflow-y-auto bg-background p-4 relative">
-            {JSON.stringify(pendingFilters) !== JSON.stringify(appliedFilters) && (
-                <div className="absolute top-2 right-4 z-40 bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full border border-blue-200 shadow-sm animate-pulse">
-                    Click "Apply Filters" to update results
-                </div>
-            )}
-
-            <div className={`${isPlaceholderData ? "opacity-50 pointer-events-none" : ""}`}>
-                {inventoryItems.length === 0 ? (
-                <div className="text-center py-12">
-                    <div className="text-lg font-semibold text-muted-foreground">
-                    No items found
-                    </div>
-                </div>
-                ) : viewMode === "grid" ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-                    {inventoryItems.map((item: any) => {
-                        const isSelected = selectedItems.some(i => i.id === item.id);
-                        return (
-                            <InventoryCard 
-                                key={item.id} 
-                                item={item} 
-                                config={cardConfig} 
-                                isSelected={isSelected}
-                                onToggle={() => toggleItem(item)} 
-                            />
-                        );
-                    })}
-                </div>
-                ) : (
-                <InventoryTable 
-                    items={inventoryItems} 
-                    config={cardConfig} 
-                    selectedIds={selectedItems.map(i => i.id)}       
-                    onSelectionChange={(ids) => {
-                       const newSelection = inventoryItems.filter((item: any) => ids.includes(item.id));
-                       const existingOthers = selectedItems.filter(i => !inventoryItems.some((pageItem: any) => pageItem.id === i.id));
-                       setSelection([...existingOthers, ...newSelection]); 
-                    }} 
-                />
-                )}
+          {JSON.stringify(pendingFilters) !== JSON.stringify(appliedFilters) && (
+            <div className="absolute top-2 right-4 z-40 bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full border border-blue-200 shadow-sm animate-pulse">
+              Click "Apply Filters" to update results
             </div>
+          )}
+
+          <div className={`${isPlaceholderData ? "opacity-50 pointer-events-none" : ""}`}>
+            {inventoryItems.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-lg font-semibold text-muted-foreground">
+                  No items found
+                </div>
+              </div>
+            ) : viewMode === "grid" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
+                {inventoryItems.map((item: any) => {
+                  const isSelected = selectedItems.some(i => i.id === item.id);
+                  return (
+                    <InventoryCard
+                      key={item.id}
+                      item={item}
+                      config={cardConfig}
+                      isSelected={isSelected}
+                      onToggle={() => toggleItem(item)}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <InventoryTable
+                items={inventoryItems}
+                config={cardConfig}
+                selectedIds={selectedItems.map(i => i.id)}
+                onSelectionChange={(ids) => {
+                  const newSelection = inventoryItems.filter((item: any) => ids.includes(item.id));
+                  const existingOthers = selectedItems.filter(i => !inventoryItems.some((pageItem: any) => pageItem.id === i.id));
+                  setSelection([...existingOthers, ...newSelection]);
+                }}
+              />
+            )}
+          </div>
         </div>
 
         <div className="border-t bg-background p-4 flex items-center justify-center z-10">
-            {inventoryItems.length > 0 && (
-                <PaginationControls
-                    currentPage={page}
-                    totalPages={totalPages}
-                    onPageChange={(newPage) => setPage(newPage)}
-                    isLoading={isPlaceholderData || isLoading}
-                />
-            )}
+          {inventoryItems.length > 0 && (
+            <PaginationControls
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={(newPage) => setPage(newPage)}
+              isLoading={isPlaceholderData || isLoading}
+            />
+          )}
         </div>
       </main>
 
       {/* Floating Cart Button */}
       {selectedItems.length > 0 && (
         <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-50 bg-foreground text-background px-6 py-3 rounded-full shadow-xl flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4">
-           <span className="font-semibold text-sm">
-             {selectedItems.length} item{selectedItems.length > 1 ? 's' : ''} selected
-           </span>
-           <div className="h-4 w-[1px] bg-background/30"></div>
-           <Button 
-             size="sm" 
-             variant="secondary" 
-             onClick={handleAddToCart}
-             className="gap-2"
-           >
-             <ShoppingCart className="h-4 w-4" />
-             Add to Compare Cart
-           </Button>
-           <button 
-             onClick={() => clearSelection()}
-             className="ml-2 hover:bg-white/20 p-1 rounded-full transition-colors"
-           >
-             <X className="h-4 w-4" />
-           </button>
+          <span className="font-semibold text-sm">
+            {selectedItems.length} item{selectedItems.length > 1 ? 's' : ''} selected
+          </span>
+          <div className="h-4 w-[1px] bg-background/30"></div>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={handleAddToCart}
+            className="gap-2"
+          >
+            <ShoppingCart className="h-4 w-4" />
+            Add to Compare Cart
+          </Button>
+          <button
+            onClick={() => clearSelection()}
+            className="ml-2 hover:bg-white/20 p-1 rounded-full transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       )}
     </div>

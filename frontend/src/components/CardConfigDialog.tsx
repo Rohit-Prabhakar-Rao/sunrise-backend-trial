@@ -127,6 +127,14 @@ export const CardConfigDialog = ({ config, onConfigChange }: CardConfigDialogPro
     setLocalConfig(defaultConfig);
   };
 
+  const handleSelectAll = () => {
+    const allSelected = Object.keys(fieldLabels).reduce((acc, key) => {
+      acc[key as keyof CardFieldConfig] = true;
+      return acc;
+    }, {} as CardFieldConfig);
+    setLocalConfig(allSelected);
+  };
+
   const fieldLabels: Record<keyof CardFieldConfig, string> = {
     polymerCode: "Polymer Code",
     formCode: "Form Code",
@@ -167,14 +175,14 @@ export const CardConfigDialog = ({ config, onConfigChange }: CardConfigDialogPro
           Card Settings
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh]">
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Configure Card Fields</DialogTitle>
           <DialogDescription>
             Select which fields to display on inventory cards
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="max-h-[60vh] pr-4">
+        <ScrollArea className="flex-1 overflow-auto pr-4">
           <div className="space-y-4 py-4">
             {Object.entries(fieldLabels).map(([field, label]) => (
               <div key={field} className="flex items-center space-x-2">
@@ -193,10 +201,15 @@ export const CardConfigDialog = ({ config, onConfigChange }: CardConfigDialogPro
             ))}
           </div>
         </ScrollArea>
-        <div className="flex justify-between pt-4 border-t">
-          <Button variant="outline" onClick={handleReset}>
-            Reset to Default
-          </Button>
+        <div className="flex justify-between items-center pt-4 border-t mt-auto flex-shrink-0">
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleSelectAll}>
+              Select All
+            </Button>
+            <Button variant="outline" onClick={handleReset}>
+              Reset to Default
+            </Button>
+          </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel
