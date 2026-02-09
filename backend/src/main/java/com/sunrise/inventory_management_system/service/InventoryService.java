@@ -35,7 +35,7 @@ public class InventoryService {
                 case "quantity-low" -> Sort.by("availableQty").ascending();
                 case "supplier" -> Sort.by("supplierCode").ascending();
                 case "polymer" -> Sort.by("polymerCode").ascending();
-                case "lots" -> Sort.by("lotName").ascending();
+                case "lot" -> Sort.by("lot").ascending();
                 default -> Sort.by("panDate").descending();
             };
         }

@@ -44,9 +44,9 @@ logging:
 
 smb:
   server:
-    ip: "172.29.80.1"
+    ip: "172.17.96.1"
   share:
     name: "SunriseImages"
   username: "Rohit Prabhakar"
-  password: "Flamekaiser@14"
+  password: "Flamekaiser@1411"
   domain: ""

@@ -9,7 +9,7 @@ export default defineConfig({
     host: "::",
     port: 8081,
   },
-  plugins: [react(), basicSsl()],
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

@@ -30,6 +30,7 @@ interface FilterSidebarProps {
     dateRange?: string[];
   };
   onApply: () => void;
+  onReset?: () => void;
 }
 
 const FILTER_ORDER_STORAGE_KEY = "inventory-filter-order";
@@ -80,13 +81,13 @@ const parseRange = (rangeData: string[] | undefined, defaultMin: number, default
   const max = parseFloat(rangeData[1]);
   return [isNaN(min) ? defaultMin : min, isNaN(max) ? defaultMax : max];
 };
-
 export const FilterSidebar = ({
   inventory,
   filters,
   onFiltersChange,
   filterOptions,
-  onApply
+  onApply,
+  onReset
 }: FilterSidebarProps) => {
   const [expandedGroups, setExpandedGroups] = useState<string[]>([
     "supplier",
@@ -205,7 +206,7 @@ export const FilterSidebar = ({
   };
 
   const clearAllFilters = () => {
-    onFiltersChange({
+    const initialFilters = {
       suppliers: [],
       polymers: [],
       forms: [],
@@ -227,7 +228,15 @@ export const FilterSidebar = ({
         izod: false,
         density: false,
       },
-    });
+    };
+
+    // Update pending state
+    onFiltersChange(initialFilters);
+
+    // If onReset handler is provided, call it to apply changes immediately
+    if (onReset) {
+      onReset();
+    }
   };
 
   const renderFilter = (filterId: string) => {

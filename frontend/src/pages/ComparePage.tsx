@@ -6,6 +6,7 @@ import { useAuth } from "react-oidc-context";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, X, Loader2, Printer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { PageLoader } from "@/components/PageLoader";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useReactToPrint } from "react-to-print";
@@ -47,11 +48,7 @@ const ComparePage = () => {
     }
 
     if (isLoading) {
-        return (
-            <div className="h-screen flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        );
+        return <PageLoader message="Comparing products..." />;
     }
 
     // Define rows to compare

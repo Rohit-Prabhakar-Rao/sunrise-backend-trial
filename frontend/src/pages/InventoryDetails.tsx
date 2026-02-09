@@ -9,9 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Loader2, ArrowLeft, ShoppingCart, 
-  Package, FileText, Ruler, Warehouse 
+import {
+  Loader2, ArrowLeft, ShoppingCart,
+  Package, FileText, Ruler, Warehouse
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -21,6 +21,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { PageLoader } from "@/components/PageLoader";
 
 const InventoryDetail = () => {
   const { id } = useParams();
@@ -47,11 +48,7 @@ const InventoryDetail = () => {
   }, [item]);
 
   if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <PageLoader message="Loading details..." />;
   }
 
   if (isError || !item) {
@@ -78,15 +75,15 @@ const InventoryDetail = () => {
       </Button>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
-        
+
         {/* LEFT COLUMN: IMAGES */}
         <div className="space-y-4">
           {/* Main Large Image */}
           <div className="aspect-[4/3] bg-muted rounded-lg overflow-hidden border shadow-sm relative">
             {activeImage ? (
-              <img 
-                src={activeImage} 
-                alt="Main Preview" 
+              <img
+                src={activeImage}
+                alt="Main Preview"
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -98,19 +95,19 @@ const InventoryDetail = () => {
 
           {/* Thumbnail Strip */}
           {item.sampleImages && item.sampleImages.length > 0 && (
-             <Carousel className="w-full max-w-md mx-auto">
-                <CarouselContent>
-                  {item.sampleImages.map((img: string, idx: number) => (
-                    <CarouselItem key={idx} className="basis-1/4 cursor-pointer" onClick={() => setActiveImage(img)}>
-                      <div className={`rounded-md overflow-hidden border-2 aspect-square ${activeImage === img ? 'border-primary' : 'border-transparent'}`}>
-                        <img src={img} className="w-full h-full object-cover" />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
-             </Carousel>
+            <Carousel className="w-full max-w-md mx-auto">
+              <CarouselContent>
+                {item.sampleImages.map((img: string, idx: number) => (
+                  <CarouselItem key={idx} className="basis-1/4 cursor-pointer" onClick={() => setActiveImage(img)}>
+                    <div className={`rounded-md overflow-hidden border-2 aspect-square ${activeImage === img ? 'border-primary' : 'border-transparent'}`}>
+                      <img src={img} className="w-full h-full object-cover" />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
           )}
         </div>
 
@@ -132,30 +129,30 @@ const InventoryDetail = () => {
 
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-1">
-               <span className="text-sm text-muted-foreground">Lot Number</span>
-               <p className="font-mono font-medium">{item.lot}</p>
+              <span className="text-sm text-muted-foreground">Lot Number</span>
+              <p className="font-mono font-medium">{item.lot}</p>
             </div>
             <div className="space-y-1">
-               <span className="text-sm text-muted-foreground">Form</span>
-               <p className="font-medium">{item.formCode}</p>
+              <span className="text-sm text-muted-foreground">Form</span>
+              <p className="font-medium">{item.formCode}</p>
             </div>
             <div className="space-y-1">
-               <span className="text-sm text-muted-foreground">Available Quantity</span>
-               <p className="text-2xl font-bold text-primary">{item.availableQty.toLocaleString()} kg</p>
+              <span className="text-sm text-muted-foreground">Available Quantity</span>
+              <p className="text-2xl font-bold text-primary">{item.availableQty.toLocaleString()} kg</p>
             </div>
             <div className="space-y-1">
-               <span className="text-sm text-muted-foreground">Location</span>
-               <p className="font-medium flex items-center gap-2">
-                 <Warehouse className="h-4 w-4" /> 
-                 {item.warehouseName} ({item.locationGroup})
-               </p>
+              <span className="text-sm text-muted-foreground">Location</span>
+              <p className="font-medium flex items-center gap-2">
+                <Warehouse className="h-4 w-4" />
+                {item.warehouseName} ({item.locationGroup})
+              </p>
             </div>
           </div>
 
           <div className="flex gap-4 pt-4">
-             <Button size="lg" className="w-full md:w-auto" onClick={handleAddToCart} disabled={item.availableQty <= 0}>
-                <ShoppingCart className="mr-2 h-5 w-5" /> Add to Compare Cart
-             </Button>
+            <Button size="lg" className="w-full md:w-auto" onClick={handleAddToCart} disabled={item.availableQty <= 0}>
+              <ShoppingCart className="mr-2 h-5 w-5" /> Add to Compare Cart
+            </Button>
           </div>
 
           {/* TABS FOR DEEP DIVE */}
@@ -165,48 +162,48 @@ const InventoryDetail = () => {
               <TabsTrigger value="allocations">Allocations & History</TabsTrigger>
               <TabsTrigger value="container">Logistics</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="specs" className="mt-4">
-               <Card>
-                 <CardContent className="pt-6 grid grid-cols-2 gap-4">
-                    <SpecRow label="Melt Index (MI)" value={item.mi} unit="g/10min" />
-                    <SpecRow label="Density" value={item.density} unit="g/cm³" decimals={4} />
-                    <SpecRow label="Izod Impact" value={item.izod} unit="J/m" />
-                    <SpecRow label="Resin Type" value={item.polymerCode} />
-                 </CardContent>
-               </Card>
+              <Card>
+                <CardContent className="pt-6 grid grid-cols-2 gap-4">
+                  <SpecRow label="Melt Index (MI)" value={item.mi} unit="g/10min" />
+                  <SpecRow label="Density" value={item.density} unit="g/cm³" decimals={4} />
+                  <SpecRow label="Izod Impact" value={item.izod} unit="J/m" />
+                  <SpecRow label="Resin Type" value={item.polymerCode} />
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="allocations" className="mt-4">
-               <Card>
-                 <CardContent className="pt-6 space-y-4">
-                    <div>
-                       <p className="text-sm font-medium mb-2">Allocated Customers</p>
-                       <div className="flex flex-wrap gap-2">
-                          {item.allocatedCustomerCodes ? (
-                              item.allocatedCustomerCodes.split(',').map((c: string) => (
-                                <Badge key={c} variant="outline">{c.trim()}</Badge>
-                              ))
-                          ) : <span className="text-muted-foreground text-sm">None</span>}
-                       </div>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <div>
+                    <p className="text-sm font-medium mb-2">Allocated Customers</p>
+                    <div className="flex flex-wrap gap-2">
+                      {item.allocatedCustomerCodes ? (
+                        item.allocatedCustomerCodes.split(',').map((c: string) => (
+                          <Badge key={c} variant="outline">{c.trim()}</Badge>
+                        ))
+                      ) : <span className="text-muted-foreground text-sm">None</span>}
                     </div>
-                    <div>
-                       <p className="text-sm font-medium mb-2">Sales Order Types</p>
-                       <p className="text-sm text-muted-foreground">{item.allocatedSOtypes || "N/A"}</p>
-                    </div>
-                 </CardContent>
-               </Card>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium mb-2">Sales Order Types</p>
+                    <p className="text-sm text-muted-foreground">{item.allocatedSOtypes || "N/A"}</p>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="container" className="mt-4">
-               <Card>
-                 <CardContent className="pt-6 grid grid-cols-2 gap-4">
-                    <SpecRow label="Container #" value={item.containerNum} />
-                    <SpecRow label="Purchase Order" value={item.po} />
-                    <SpecRow label="Packing" value={item.packing} />
-                    <SpecRow label="Pan ID" value={item.panId} />
-                 </CardContent>
-               </Card>
+              <Card>
+                <CardContent className="pt-6 grid grid-cols-2 gap-4">
+                  <SpecRow label="Container #" value={item.containerNum} />
+                  <SpecRow label="Purchase Order" value={item.po} />
+                  <SpecRow label="Packing" value={item.packing} />
+                  <SpecRow label="Pan ID" value={item.panId} />
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>
@@ -220,8 +217,8 @@ const SpecRow = ({ label, value, unit, decimals = 2 }: any) => (
   <div className="flex flex-col">
     <span className="text-xs text-muted-foreground uppercase">{label}</span>
     <span className="font-medium">
-       {value != null ? (typeof value === 'number' ? value.toLocaleString(undefined, { maximumFractionDigits: decimals }) : value) : "N/A"} 
-       {unit && <span className="text-muted-foreground text-xs ml-1">{unit}</span>}
+      {value != null ? (typeof value === 'number' ? value.toLocaleString(undefined, { maximumFractionDigits: decimals }) : value) : "N/A"}
+      {unit && <span className="text-muted-foreground text-xs ml-1">{unit}</span>}
     </span>
   </div>
 );

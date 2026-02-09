@@ -21,6 +21,7 @@ interface SearchHeaderProps {
   resultCount: number;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  onSearchExecute?: () => void;
   cardConfig: CardFieldConfig;
   onCardConfigChange: (config: CardFieldConfig) => void;
   onExport: () => void;
@@ -34,6 +35,7 @@ export const SearchHeader = ({
   resultCount,
   searchQuery,
   onSearchChange,
+  onSearchExecute,
   cardConfig,
   onCardConfigChange,
   onExport,
@@ -47,10 +49,22 @@ export const SearchHeader = ({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by polymer, grade, supplier, PO, container..."
-              className="pl-10 h-10 bg-background border-border"
+              className="pl-10 h-10 bg-background border-border pr-20"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && onSearchExecute) {
+                  onSearchExecute();
+                }
+              }}
             />
+            <Button
+              size="sm"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm transition-all active:scale-95"
+              onClick={onSearchExecute}
+            >
+              Search
+            </Button>
           </div>
         </div>
 

@@ -6,7 +6,7 @@ import { SearchHeader } from "@/components/SearchHeader";
 import { InventoryCard } from "@/components/InventoryCard";
 import { InventoryTable } from "@/components/InventoryTable";
 import { loadConfig, CardFieldConfig } from "@/components/CardConfigDialog";
-import { Loader2, ShoppingCart, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, ShoppingCart, X, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { FilterState } from "@/lib/filterInventory";
@@ -15,12 +15,15 @@ import { toast } from "sonner";
 import { useCartStore } from "@/lib/cartStore";
 import { useInventoryUiStore } from "@/lib/inventoryUiStore";
 import { PaginationControls } from "@/components/PaginationControls";
+import { PageLoader } from "@/components/PageLoader";
+import { ContentLoader } from "@/components/ContentLoader";
 
 const PAGE_SIZE = 50;
 
 const Index = () => {
   const [sortBy, setSortBy] = useState("recent");
   const [cardConfig, setCardConfig] = useState<CardFieldConfig>(loadConfig());
+  const [loaderState, setLoaderState] = useState<{ message: string; timestamp: number } | null>(null);
   const auth = useAuth();
 
   const {
@@ -39,10 +42,72 @@ const Index = () => {
     setPendingFilters(appliedFilters);
   }, [appliedFilters]);
 
+  // Effect to automatically clear manual loader messages after a minimum visible duration
+  useEffect(() => {
+    if (loaderState) {
+      const timer = setTimeout(() => setLoaderState(null), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [loaderState]);
+
+  const triggerLoader = (message: string) => {
+    setLoaderState({ message, timestamp: Date.now() });
+  };
+
   const handleApplyFilters = () => {
-    setAppliedFilters(pendingFilters);
+    triggerLoader("Applying filters...");
+    // Apply all filters EXCEPT the seaarch query (keep currently ACTIVE search)
+    setAppliedFilters({
+      ...pendingFilters,
+      searchQuery: appliedFilters.searchQuery
+    });
     setPage(0);
     toast.success("Filters applied");
+  };
+
+  const handleSearchExecute = () => {
+    triggerLoader("Searching items...");
+    // Only update the search query, keeping already APPLIED sidebar filters
+    setAppliedFilters({
+      ...appliedFilters,
+      searchQuery: pendingFilters.searchQuery
+    });
+    setPage(0);
+  };
+
+  const handleGlobalReset = () => {
+    triggerLoader("Resetting view...");
+    const initialFilters = {
+      suppliers: [],
+      polymers: [],
+      forms: [],
+      grades: [],
+      locations: [],
+      warehouses: [],
+      dateRange: { from: undefined, to: undefined },
+      miRange: { from: undefined, to: undefined },
+      densityRange: { from: undefined, to: undefined },
+      izodRange: { from: undefined, to: undefined },
+      quantityRange: { from: undefined, to: undefined },
+      lots: [],
+      searchQuery: "",
+      includeNAMI: true,
+      includeNADensity: true,
+      includeNAIzod: true,
+      qualityControl: {
+        mi: false,
+        izod: false,
+        density: false,
+      },
+    };
+
+    // Reset BOTH pending and applied states immediately
+    setPendingFilters(initialFilters);
+    setAppliedFilters(initialFilters);
+    setSortBy("recent");
+    setPage(0);
+    clearSelection();
+    toast.success("All filters, search, and sorting cleared");
   };
 
   const handleAddToCart = () => {
@@ -78,6 +143,7 @@ const Index = () => {
     data,
     isLoading,
     isError,
+    isFetching,
     isPlaceholderData
   } = useQuery({
     queryKey: ['inventory', appliedFilters, debouncedSort, page],
@@ -107,21 +173,11 @@ const Index = () => {
 
   const hasNextPage = page < totalPages - 1;
 
-  if (isLoading && !data) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <div className="text-lg font-semibold mt-4">Loading inventory...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return <div className="p-10 text-center text-red-500">Error loading data. Check Backend Console.</div>;
-  }
-  console.log('Item IDs:', inventoryItems.map(i => i.id));
+  // Show loader overlay when fetching new results 
+  // Priority: manual loader message > isFetching/isPlaceholder > initial load
+  const activeLoaderMessage = loaderState?.message || (isFetching || isPlaceholderData ? "Updating results..." : (isLoading && !data ? "Loading inventory..." : null));
+  const isTransitioning = !!activeLoaderMessage;
+  const loaderKey = loaderState ? `loader-${loaderState.timestamp}` : (isFetching ? 'fetching' : (isLoading ? 'loading' : 'none'));
 
   return (
     <div className="flex h-screen bg-background relative">
@@ -131,6 +187,7 @@ const Index = () => {
         filters={pendingFilters}
         onFiltersChange={setPendingFilters}
         onApply={handleApplyFilters}
+        onReset={handleGlobalReset}
       />
 
       <main className="flex-1 flex flex-col overflow-hidden">
@@ -138,22 +195,47 @@ const Index = () => {
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           sortBy={sortBy}
-          onSortChange={setSortBy}
+          onSortChange={(val) => {
+            setSortBy(val);
+            triggerLoader("Sorting results...");
+          }}
           // --- UPDATE HEADER COUNT ---
           resultCount={totalElements}
           searchQuery={pendingFilters.searchQuery}
           onSearchChange={(query) => setPendingFilters({ ...pendingFilters, searchQuery: query })}
+          onSearchExecute={handleSearchExecute}
           cardConfig={cardConfig}
           onCardConfigChange={setCardConfig}
           onExport={handleExport}
         />
 
         <div className="flex-1 overflow-y-auto bg-background p-4 relative">
-          {JSON.stringify(pendingFilters) !== JSON.stringify(appliedFilters) && (
-            <div className="absolute top-2 right-4 z-40 bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full border border-blue-200 shadow-sm animate-pulse">
-              Click "Apply Filters" to update results
+          {isTransitioning && <ContentLoader key={loaderKey} message={activeLoaderMessage || "Updating..."} />}
+          {isError && (
+            <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
+              <AlertCircle className="h-12 w-12 text-red-500" />
+              <div className="space-y-1">
+                <h3 className="text-lg font-bold">Network Error</h3>
+                <p className="text-sm text-muted-foreground">Failed to load inventory. Please check the backend connection.</p>
+              </div>
+              <Button variant="outline" onClick={() => window.location.reload()}>Retry Connection</Button>
             </div>
           )}
+          {!isError && (() => {
+            // Check if any filter OTHER than searchQuery is different
+            const { searchQuery: pSearch, ...pRest } = pendingFilters;
+            const { searchQuery: aSearch, ...aRest } = appliedFilters;
+            const isSidebarDirty = JSON.stringify(pRest) !== JSON.stringify(aRest);
+
+            if (isSidebarDirty) {
+              return (
+                <div className="absolute top-2 right-4 z-40 bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full border border-blue-200 shadow-sm animate-pulse">
+                  Click "Apply Filters" to update results
+                </div>
+              );
+            }
+            return null;
+          })()}
 
           <div className={`${isPlaceholderData ? "opacity-50 pointer-events-none" : ""}`}>
             {inventoryItems.length === 0 ? (

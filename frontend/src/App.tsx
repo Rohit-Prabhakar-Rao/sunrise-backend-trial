@@ -20,6 +20,7 @@ import ComparePage from "./pages/ComparePage";
 // Components
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ThemeProvider } from "@/components/theme-provider";
+import { PageLoader } from "@/components/PageLoader";
 
 const queryClient = new QueryClient();
 
@@ -29,15 +30,7 @@ const AppContent = () => {
 
   // A. Loading State
   if (auth.isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          {/* Simple Spinner */}
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <div className="text-lg font-semibold text-slate-700">Connecting to Corporate Server...</div>
-        </div>
-      </div>
-    );
+    return <PageLoader message="Connecting to Corporate Server..." />;
   }
 
   // B. Error State

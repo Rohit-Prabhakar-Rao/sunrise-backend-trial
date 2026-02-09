@@ -20,7 +20,7 @@ export function UserMenu() {
   // Get User Details from Token
   const username = auth.user.profile.preferred_username || "User";
   const email = auth.user.profile.email || "";
-  
+
   // Extract Initials (e.g. "Sales Rep" -> "SR")
   const initials = username.substring(0, 2).toUpperCase();
 
@@ -35,7 +35,7 @@ export function UserMenu() {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      
+
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
@@ -43,43 +43,43 @@ export function UserMenu() {
             <p className="text-xs leading-none text-muted-foreground">{email}</p>
           </div>
         </DropdownMenuLabel>
-        
+
         <DropdownMenuSeparator />
-        
+
         {/* Optional: Show Roles for debugging */}
         <DropdownMenuItem className="cursor-default">
-           <Shield className="mr-2 h-4 w-4 text-muted-foreground" />
-           <span className="text-xs text-muted-foreground">
-             Role: {(auth.user.profile as any).realm_access?.roles?.[0] || "User"}
-           </span>
+          <Shield className="mr-2 h-4 w-4 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">
+            Role: {(auth.user.profile as any).realm_access?.roles?.[0] || "User"}
+          </span>
         </DropdownMenuItem>
-        
+
         <DropdownMenuSeparator />
-        
+
         {/* LOGOUT BUTTON */}
-        <DropdownMenuItem 
+        <DropdownMenuItem
           className="text-red-600 focus:text-red-600 cursor-pointer"
           onClick={() => {
-              // Prepare the logout parameters
-              const logoutParams = {
-                  // This is the ADFS logout page
-                  // post_logout_redirect_uri: "https://adfs.sunrise.lab/adfs/ls/?wa=wsignout1.0",
-                  post_logout_redirect_uri: import.meta.env.VITE_ADFS_LOGOUT_REDIRECT_URI,
-                  // This 'hint' tells Keycloak exactly which session to kill so it doesn't ask "Are you sure?"
-                  id_token_hint: auth.user?.id_token, 
-              };
+            // Prepare the logout parameters
+            const logoutParams = {
+              // This is the ADFS logout page
+              // post_logout_redirect_uri: "https://adfs.sunrise.lab/adfs/ls/?wa=wsignout1.0",
+              post_logout_redirect_uri: import.meta.env.VITE_ADFS_LOGOUT_REDIRECT_URI,
+              // This 'hint' tells Keycloak exactly which session to kill so it doesn't ask "Are you sure?"
+              id_token_hint: auth.user?.id_token,
+            };
 
-              // Clear local storage manually to be safe
-              localStorage.clear();
-              sessionStorage.clear();
+            // Clear local storage manually to be safe
+            localStorage.clear();
+            sessionStorage.clear();
 
-              // Perform the redirect using the library's built-in method
-              auth.signoutRedirect(logoutParams);
+            // Perform the redirect using the library's built-in method
+            auth.signoutRedirect(logoutParams);
           }}
-      >
-        <LogOut className="mr-2 h-4 w-4" />
-        <span>Log out</span>
-      </DropdownMenuItem>
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Log out</span>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
