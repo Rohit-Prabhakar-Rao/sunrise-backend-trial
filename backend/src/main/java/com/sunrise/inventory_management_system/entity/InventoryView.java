@@ -57,7 +57,7 @@ public class InventoryView {
     private String brand;
 
     @Column(name = "FormId")
-    private int formId;
+    private Integer formId;
 
     @Column(name = "FormCode")
     private String formCode;

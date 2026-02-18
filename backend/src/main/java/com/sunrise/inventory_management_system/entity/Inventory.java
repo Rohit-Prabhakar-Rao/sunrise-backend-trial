@@ -41,6 +41,9 @@ public class Inventory {
     @Formula("FolderCode + '-' + CAST(LOT AS varchar(50))")
     private String lotName;
 
+    @Column(name = "FolderCode")
+    private String folderCode;
+
     @Column(name = "ContainerNum")
     private String containerNum;
 
@@ -116,4 +119,13 @@ public class Inventory {
         END)
     """)
     private Double izodImpact;
+
+    @Column(name = "rc_compartment")
+    private String rcCompartment;
+
+    @Column(name = "sComment")
+    private String comment;
+
+    @Column(name = "Packing")
+    private String packing;
 }

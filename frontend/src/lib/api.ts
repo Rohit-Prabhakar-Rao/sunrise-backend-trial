@@ -8,12 +8,12 @@ class ApiClient {
   }
 
   private async request<T>(
-    endpoint: string, 
-    token: string | null, 
+    endpoint: string,
+    token: string | null,
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    
+
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...options.headers as any,
@@ -41,16 +41,16 @@ class ApiClient {
 
   // --- EXPORT FUNCTION ---
   async exportInventory(
-    filters: any = {}, 
-    sortBy: string, 
+    filters: any = {},
+    sortBy: string,
     token: string
   ): Promise<void> {
     const params = this.buildSearchParams(filters, sortBy);
-    
+
     const response = await fetch(`${this.baseUrl}/inventory/export?${params.toString()}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
     });
 
     if (!response.ok) throw new Error("Export failed");
@@ -59,25 +59,25 @@ class ApiClient {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `inventory_export_${new Date().toISOString().slice(0,10)}.xlsx`;
+    a.download = `inventory_export_${new Date().toISOString().slice(0, 10)}.xlsx`;
     document.body.appendChild(a);
     a.click();
     a.remove();
   }
 
   async getInventory(
-    filters: any = {}, 
-    pageParam: number = 0, 
+    filters: any = {},
+    pageParam: number = 0,
     token: string
   ): Promise<{ data: any[]; totalPages: number; totalElements: number }> {
-    
+
     const params = this.buildSearchParams(filters, filters.sortBy);
     params.append('page', pageParam.toString());
     params.append('size', '50');
 
     const response = await this.request<any>(`/inventory?${params.toString()}`, token);
 
-    
+
     // Get the list of items
     const root = response.data || response;
     const content = root.content || [];
@@ -85,11 +85,11 @@ class ApiClient {
     // Get the metadata
     // it's inside response.data.page.totalPages
     const pageInfo = root.page || {};
-    
+
     return {
-        data: content,
-        totalPages: pageInfo.totalPages || root.totalPages || 0,
-        totalElements: pageInfo.totalElements || root.totalElements || 0
+      data: content,
+      totalPages: pageInfo.totalPages || root.totalPages || 0,
+      totalElements: pageInfo.totalElements || root.totalElements || 0
     };
   }
 
@@ -123,7 +123,7 @@ class ApiClient {
     if (filters.grades?.length) params.append('gradeCodes', filters.grades.join(','));
     if (filters.warehouses?.length) params.append('warehouseNames', filters.warehouses.join(','));
     if (filters.locations?.length) {
-        params.append('locationGroups', filters.locations.join(','));
+      params.append('locationGroups', filters.locations.join(','));
     }
     if (filters.lots?.length) params.append('lots', filters.lots.join(','));
 

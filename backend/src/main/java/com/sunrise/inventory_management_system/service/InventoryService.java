@@ -29,15 +29,29 @@ public class InventoryService {
     public Page<InventoryDTO> searchInventory(InventorySearchCriteria criteria, int page, int size, String sortParam) {
 
         Sort sort = Sort.by("panDate").descending();
-        if (sortParam != null) {
-            sort = switch (sortParam) {
-                case "quantity-high" -> Sort.by("availableQty").descending();
-                case "quantity-low" -> Sort.by("availableQty").ascending();
-                case "supplier" -> Sort.by("supplierCode").ascending();
-                case "polymer" -> Sort.by("polymerCode").ascending();
-                case "lot" -> Sort.by("lot").ascending();
-                default -> Sort.by("panDate").descending();
-            };
+
+        if (sortParam != null && !sortParam.isEmpty()) {
+            if (sortParam.contains(",")) {
+                // Handle generic "field,direction" format
+                String[] parts = sortParam.split(",");
+                String property = parts[0];
+                String direction = parts.length > 1 ? parts[1] : "asc";
+
+                sort = direction.equalsIgnoreCase("desc")
+                        ? Sort.by(property).descending()
+                        : Sort.by(property).ascending();
+            } else {
+                // Fallback for legacy keys (if any still sent)
+                sort = switch (sortParam) {
+                    case "quantity-high" -> Sort.by("availableQty").descending();
+                    case "quantity-low" -> Sort.by("availableQty").ascending();
+                    case "supplier" -> Sort.by("supplierCode").ascending();
+                    case "polymer" -> Sort.by("polymerCode").ascending();
+                    case "lot" -> Sort.by("lot").ascending();
+                    case "recent" -> Sort.by("panDate").descending();
+                    default -> Sort.by("panDate").descending();
+                };
+            }
         }
 
         Pageable pageable = PageRequest.of(page, size, sort);
@@ -96,7 +110,8 @@ public class InventoryService {
         filters.put("lots", removeEmpty(viewRepository.findDistinctLotNames()));
 
         // 2. Fetch Ranges (MI, Density, Izod)
-        // Results are: [0]=minMi, [1]=maxMi, [2]=minDen, [3]=maxDen, [4]=minIzod, [5]=maxIzod
+        // Results are: [0]=minMi, [1]=maxMi, [2]=minDen, [3]=maxDen, [4]=minIzod,
+        // [5]=maxIzod
         Object[] ranges = viewRepository.findGlobalSpecRanges();
 
         // Handle potential nulls safely (if DB is empty)

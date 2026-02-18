@@ -263,6 +263,11 @@ const Index = () => {
               <InventoryTable
                 items={inventoryItems}
                 config={cardConfig}
+                sortBy={sortBy}
+                onSortChange={(val) => {
+                  setSortBy(val);
+                  triggerLoader("Sorting results...");
+                }}
                 selectedIds={selectedItems.map(i => i.id)}
                 onSelectionChange={(ids) => {
                   const newSelection = inventoryItems.filter((item: any) => ids.includes(item.id));

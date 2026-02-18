@@ -57,9 +57,24 @@ const ComparePage = () => {
         { label: "Grade", key: "gradeCode", highlight: true },
         { label: "Lot Number", key: "lot", font: "mono" },
         { label: "Form", key: "formCode" },
-        { label: "Melt Index", key: "mi", unit: "g/10min" },
-        { label: "Density", key: "density", unit: "g/cm³", decimals: 4 },
-        { label: "Izod Impact", key: "izod", unit: "J/m" },
+        {
+            label: "Melt Index",
+            key: "mi",
+            unit: "g/10min",
+            format: (v: any) => v != null ? (v % 1 === 0 ? v : v.toFixed(1)) : "-"
+        },
+        {
+            label: "Density",
+            key: "density",
+            unit: "g/cm³",
+            format: (v: any) => v != null ? v.toFixed(3) : "-"
+        },
+        {
+            label: "Izod Impact",
+            key: "izod",
+            unit: "J/m",
+            format: (v: any) => v != null ? (v % 1 === 0 ? v : v.toFixed(1)) : "-"
+        },
         { label: "Qty Available", key: "availableQty", format: (v: any) => v?.toLocaleString() + " kg", bold: true },
         { label: "Warehouse", key: "warehouseName" },
         { label: "Location", key: "locationGroup" },

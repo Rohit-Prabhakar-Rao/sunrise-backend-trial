@@ -23,6 +23,7 @@ export interface CardFieldConfig {
   quantity: boolean;
   packing: boolean;
   warehouse: boolean;
+  location: boolean;
   compartment: boolean;
   density: boolean;
   mi: boolean;
@@ -50,27 +51,28 @@ const defaultConfig: CardFieldConfig = {
   formCode: true,
   gradeCode: true,
   supplierCode: true,
-  po: true,
-  containerNum: true,
+  po: false,
+  containerNum: false,
   quantity: true,
   packing: false,
   warehouse: true,
-  compartment: true,
+  location: false,
+  compartment: false,
   density: true,
   mi: true,
   izod: true,
   brand: true,
-  date: false,
-  folderCode: false,
+  date: true,
+  folderCode: true,
   lot: false,
-  lotName: false,
+  lotName: true,
   panId: false,
-  allocationStatus: false,
+  allocationStatus: true,
   overAllocatedBy: false,
   packLeft: false,
   weightLeft: false,
   comment: false,
-  allocatedCustomers: true,
+  allocatedCustomers: false,
   allocationIds: false,
   bookNums: false,
   contNums: false,
@@ -138,22 +140,22 @@ export const CardConfigDialog = ({ config, onConfigChange }: CardConfigDialogPro
   const fieldLabels: Record<keyof CardFieldConfig, string> = {
     polymerCode: "Polymer Code",
     formCode: "Form Code",
-    gradeCode: "Grade Code",
     supplierCode: "Supplier Code",
-    po: "Purchase Order", // what to show
-    containerNum: "Container Number",
     quantity: "Quantity",
-    packing: "Packing",
     warehouse: "Warehouse",
-    compartment: "Compartment",
     density: "Density",
     mi: "Melt Index (MI)",
     izod: "Izod Impact",
     brand: "Brand",
     date: "Date",
     folderCode: "Folder Code",
-    lot: "Lot Number",
     lotName: "Lot Name",
+    gradeCode: "Grade Code", // Positioned lower as requested
+    po: "Purchase Order",
+    containerNum: "Container Number",
+    packing: "Packing",
+    compartment: "Compartment",
+    lot: "Lot Number",
     panId: "Pan ID",
     allocationStatus: "Allocation Status",
     overAllocatedBy: "Over Allocated By",
@@ -165,6 +167,7 @@ export const CardConfigDialog = ({ config, onConfigChange }: CardConfigDialogPro
     bookNums: "Book Numbers",
     contNums: "Container Numbers",
     soTypes: "Sales Order Types",
+    location: "Location", // Positioned here as requested
   };
 
   return (

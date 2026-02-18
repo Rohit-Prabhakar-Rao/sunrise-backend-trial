@@ -12,21 +12,134 @@ import {
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { User } from "lucide-react";
+import { ArrowUpDown, ChevronDown, ChevronUp, User } from "lucide-react";
 
 interface InventoryTableProps {
   items: InventoryItem[];
   config: CardFieldConfig;
   selectedIds: string[];
   onSelectionChange: (ids: string[]) => void;
+  sortBy?: string;
+  onSortChange?: (value: string) => void;
 }
 
 export const InventoryTable = ({
   items,
   config,
   selectedIds,
-  onSelectionChange
+  onSelectionChange,
+  sortBy,
+  onSortChange
 }: InventoryTableProps) => {
+
+  // Helper to parse the current sort state (handles both legacy and generic keys)
+  const parseSortState = (sortKey: string | undefined) => {
+    if (!sortKey) return { field: "panDate", dir: "desc" }; // Default to recent
+
+    // Legacy mapping
+    const legacyMap: Record<string, { field: string; dir: "asc" | "desc" }> = {
+      "recent": { field: "panDate", dir: "desc" },
+      "quantity-high": { field: "availableQty", dir: "desc" },
+      "quantity-low": { field: "availableQty", dir: "asc" },
+      "supplier": { field: "supplierCode", dir: "asc" },
+      "polymer": { field: "polymerCode", dir: "asc" },
+      "lot": { field: "lot", dir: "asc" }
+    };
+
+    if (legacyMap[sortKey]) {
+      return legacyMap[sortKey];
+    }
+
+    // Generic mapping (field,dir)
+    if (sortKey.includes(",")) {
+      const [field, dir] = sortKey.split(",");
+      return { field, dir: dir as "asc" | "desc" };
+    }
+
+    // Fallback
+    return { field: sortKey, dir: "asc" as const };
+  };
+
+  const handleSort = (key: string) => {
+    if (!onSortChange) return;
+
+    // Mapping table keys to backend property names
+    const fieldMap: Record<string, string> = {
+      polymerCode: "polymerCode",
+      formCode: "formCode",
+      gradeCode: "gradeCode",
+      supplierCode: "supplierCode",
+      availableQty: "availableQty",
+      warehouseName: "warehouseName",
+      location: "locationGroup",
+      density: "density",
+      mi: "meltIndex",
+      izod: "izodImpact",
+      brand: "brand",
+      date: "panDate",
+      lot: "lot",
+      lotName: "lotName",
+      panId: "panId",
+      // allocationStatus: "allocationStatus",
+      po: "purchaseOrder",
+      containerNum: "containerNum",
+      packing: "packing",
+      compartment: "rcCompartment"
+    };
+
+    const targetField = fieldMap[key] || key;
+    const { field: currentField, dir: currentDir } = parseSortState(sortBy);
+
+    let newSort = "";
+    if (currentField === targetField) {
+      // Toggle direction
+      const newDir = currentDir === "asc" ? "desc" : "asc";
+      newSort = `${targetField},${newDir}`;
+    } else {
+      // Default new sort based on type (numbers/dates typically desc first)
+      const descByDefault = ["availableQty", "panDate", "density", "mi", "izod"];
+      const defaultDir = descByDefault.includes(targetField) ? "desc" : "asc";
+      newSort = `${targetField},${defaultDir}`;
+    }
+
+    onSortChange(newSort);
+  };
+
+  const getSortIcon = (key: string) => {
+    const fieldMap: Record<string, string> = {
+      polymerCode: "polymerCode",
+      formCode: "formCode",
+      gradeCode: "gradeCode",
+      supplierCode: "supplierCode",
+      availableQty: "availableQty",
+      warehouseName: "warehouseName",
+      location: "locationGroup",
+      density: "density",
+      mi: "mi",
+      izod: "izod",
+      brand: "brand",
+      date: "panDate",
+      lot: "lot",
+      lotName: "lotName",
+      panId: "panId",
+      // allocationStatus: "allocationStatus",
+      po: "po",
+      containerNum: "containerNum",
+      packing: "packing",
+      compartment: "rcCompartment"
+    };
+
+    const targetField = fieldMap[key] || key;
+    const { field: activeField, dir: activeDir } = parseSortState(sortBy);
+
+    if (activeField !== targetField) {
+      return <ArrowUpDown className="ml-2 h-3 w-3 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" />;
+    }
+
+    return activeDir === "desc"
+      ? <ChevronDown className="ml-2 h-4 w-4 text-primary" />
+      : <ChevronUp className="ml-2 h-4 w-4 text-primary" />;
+  };
 
   // Selection Logic Helpers
   const isAllSelected = items.length > 0 && selectedIds.length === items.length;
@@ -48,37 +161,38 @@ export const InventoryTable = ({
     }
   };
 
-  // Determine which columns to show based on config
+  // Determine which columns to show and their sortability
   const columns = [
-    { key: "polymerCode", label: "Polymer", show: config.polymerCode },
-    { key: "formCode", label: "Form", show: config.formCode },
-    { key: "gradeCode", label: "Grade", show: config.gradeCode },
-    { key: "supplierCode", label: "Supplier", show: config.supplierCode },
-    { key: "po", label: "PO", show: config.po },
-    { key: "containerNum", label: "Container", show: config.containerNum },
-    { key: "availableQty", label: "Quantity", show: config.quantity },
-    { key: "packing", label: "Packing", show: config.packing },
-    { key: "warehouseName", label: "Warehouse", show: config.warehouse },
-    { key: "compartment", label: "Compartment", show: config.compartment },
-    { key: "density", label: "Density", show: config.density },
-    { key: "mi", label: "MI", show: config.mi },
-    { key: "izod", label: "Izod", show: config.izod },
-    { key: "brand", label: "Brand", show: config.brand },
-    { key: "date", label: "Date", show: config.date },
-    { key: "folderCode", label: "Folder", show: config.folderCode },
-    { key: "lot", label: "Lot", show: config.lot },
-    { key: "lotName", label: "Lot Name", show: config.lotName },
-    { key: "panId", label: "Pan ID", show: config.panId },
-    { key: "allocationStatus", label: "Status", show: config.allocationStatus },
-    { key: "overAllocatedBy", label: "Over Allocated By", show: config.overAllocatedBy },
-    { key: "packLeft", label: "Pack Left", show: config.packLeft },
-    { key: "weightLeft", label: "Weight Left", show: config.weightLeft },
-    { key: "comment", label: "Comment", show: config.comment },
-    { key: "allocatedCustomers", label: "Allocated Customers", show: config.allocatedCustomers },
-    { key: "allocationIds", label: "Allocation IDs", show: config.allocationIds },
-    { key: "bookNums", label: "Book Numbers", show: config.bookNums },
-    { key: "contNums", label: "Container Numbers", show: config.contNums },
-    { key: "soTypes", label: "Sales Order Types", show: config.soTypes },
+    { key: "supplierCode", label: "Supplier", show: config.supplierCode, sortable: true },
+    { key: "polymerCode", label: "Polymer", show: config.polymerCode, sortable: true },
+    { key: "formCode", label: "Form", show: config.formCode, sortable: true },
+    { key: "gradeCode", label: "Grade", show: config.gradeCode, sortable: true },
+    { key: "lot", label: "Lot", show: config.lot, sortable: true },
+    { key: "folderCode", label: "Folder", show: config.folderCode, sortable: true },
+    { key: "availableQty", label: "Quantity", show: config.quantity, sortable: true },
+    { key: "warehouseName", label: "Warehouse", show: config.warehouse, sortable: true },
+    { key: "location", label: "Location", show: config.location, sortable: true },
+    { key: "density", label: "Density", show: config.density, sortable: true },
+    { key: "mi", label: "MI", show: config.mi, sortable: true },
+    { key: "izod", label: "Izod", show: config.izod, sortable: true },
+    { key: "brand", label: "Brand", show: config.brand, sortable: true },
+    { key: "date", label: "Date", show: config.date, sortable: true },
+    { key: "lotName", label: "Lot Name", show: config.lotName, sortable: true },
+    { key: "allocationStatus", label: "Status", show: config.allocationStatus, sortable: false },
+    { key: "po", label: "PO", show: config.po, sortable: true },
+    { key: "containerNum", label: "Container", show: config.containerNum, sortable: true },
+    { key: "packing", label: "Packing", show: config.packing, sortable: true },
+    { key: "compartment", label: "Compartment", show: config.compartment, sortable: true },
+    { key: "panId", label: "Pan ID", show: config.panId, sortable: true },
+    { key: "overAllocatedBy", label: "Over Allocated By", show: config.overAllocatedBy, sortable: false },
+    { key: "packLeft", label: "Pack Left", show: config.packLeft, sortable: false },
+    { key: "weightLeft", label: "Weight Left", show: config.weightLeft, sortable: false },
+    { key: "comment", label: "Comment", show: config.comment, sortable: true },
+    { key: "allocatedCustomers", label: "Allocated Customers", show: config.allocatedCustomers, sortable: false },
+    { key: "allocationIds", label: "Allocation IDs", show: config.allocationIds, sortable: false },
+    { key: "bookNums", label: "Book Numbers", show: config.bookNums, sortable: false },
+    { key: "contNums", label: "Container Numbers", show: config.contNums, sortable: false },
+    { key: "soTypes", label: "Sales Order Types", show: config.soTypes, sortable: false },
   ].filter((col) => col.show);
 
   // Parse customer codes (comma-separated string)
@@ -151,15 +265,17 @@ export const InventoryTable = ({
       case "packing":
         return item.packing;
       case "warehouseName":
-        return item.warehouseName || item.locationGroup || "N/A";
+        return item.warehouseName || "N/A";
+      case "location":
+        return item.locationGroup || "N/A";
       case "compartment":
         return item.rcCompartment || "N/A";
       case "density":
-        return item.density != null ? item.density.toFixed(2) : "N/A";
+        return item.density != null ? item.density.toFixed(3) : "N/A";
       case "mi":
-        return item.mi != null ? item.mi.toFixed(2) : "N/A";
+        return item.mi != null ? (item.mi % 1 === 0 ? item.mi : item.mi.toFixed(1)) : "N/A";
       case "izod":
-        return item.izod != null ? item.izod.toString() : "N/A";
+        return item.izod != null ? (item.izod % 1 === 0 ? item.izod : item.izod.toFixed(1)) : "N/A";
       case "brand":
         return item.brand || "N/A";
       case "date":
@@ -307,9 +423,16 @@ export const InventoryTable = ({
               {columns.map((column) => (
                 <TableHead
                   key={column.key}
-                  className="h-12 px-4 py-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase whitespace-nowrap"
+                  className={`
+                    h-10 px-4 py-2 text-[12px] font-bold tracking-tight text-muted-foreground uppercase whitespace-nowrap
+                    ${column.sortable ? "cursor-pointer select-none group transition-colors hover:text-foreground hover:bg-muted/30" : ""}
+                  `}
+                  onClick={() => column.sortable && handleSort(column.key)}
                 >
-                  {column.label}
+                  <div className="flex items-center gap-1">
+                    {column.label}
+                    {column.sortable && getSortIcon(column.key)}
+                  </div>
                 </TableHead>
               ))}
             </TableRow>
@@ -328,7 +451,7 @@ export const InventoryTable = ({
                   style={{ animationDelay: `${items.indexOf(item) * 30}ms`, animationFillMode: 'both' }}
                 >
                   {/* Row Checkbox */}
-                  <TableCell className="w-[50px] px-4 py-3 text-center align-middle">
+                  <TableCell className="w-[50px] px-4 py-2 text-center align-middle">
                     <Checkbox
                       checked={isSelected}
                       onCheckedChange={(checked) => handleSelectRow(item.id, checked as boolean)}
@@ -339,7 +462,7 @@ export const InventoryTable = ({
                   {columns.map((column) => (
                     <TableCell
                       key={column.key}
-                      className="px-4 py-3 text-sm text-foreground whitespace-nowrap group-hover:text-foreground/90"
+                      className="px-4 py-2 text-xs font-medium text-foreground whitespace-nowrap group-hover:text-foreground/90"
                     >
                       {getCellValue(item, column.key)}
                     </TableCell>

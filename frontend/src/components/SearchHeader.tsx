@@ -48,7 +48,7 @@ export const SearchHeader = ({
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by polymer, grade, supplier, PO, container..."
+              placeholder="Search by lot (e.g. folder-lot), polymer, grade, supplier, PO..."
               className="pl-10 h-10 bg-background border-border pr-20"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
@@ -79,7 +79,7 @@ export const SearchHeader = ({
             <div className="h-4 w-px bg-border hidden sm:block" />
             <Select value={sortBy} onValueChange={onSortChange}>
               <SelectTrigger className="w-[160px] h-9 bg-background border-border text-sm">
-                <SelectValue />
+                <SelectValue placeholder="Sort results" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="recent">Recently Added</SelectItem>
@@ -88,6 +88,9 @@ export const SearchHeader = ({
                 <SelectItem value="supplier">Supplier A-Z</SelectItem>
                 <SelectItem value="polymer">Polymer Type</SelectItem>
                 <SelectItem value="lot">Lot Number</SelectItem>
+                {!["recent", "quantity-high", "quantity-low", "supplier", "polymer", "lot"].includes(sortBy || "") && (
+                  <SelectItem value={sortBy || ""}>Custom Sorting</SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
