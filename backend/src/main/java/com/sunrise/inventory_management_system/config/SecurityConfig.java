@@ -24,20 +24,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults())
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/images/**").permitAll()
-
-                        // Secured Endpoints (Require specific Role)
-                        .requestMatchers("/api/inventory/**").hasRole("inventory_viewer")
-                        .anyRequest().authenticated()
-                )
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                );
-
+            .csrf(csrf -> csrf.disable()) // Disable CSRF for API access
+            .cors(cors -> cors.configure(http)) // Enable CORS support
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/**").permitAll() // Open all /api endpoints to the public
+                .anyRequest().permitAll() 
+            );
+        
         return http.build();
     }
 
