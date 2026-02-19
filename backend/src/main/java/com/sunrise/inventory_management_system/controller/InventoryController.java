@@ -19,7 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = {"http://localhost:8080", "http://localhost:8081"}, allowCredentials = "true")
+@CrossOrigin(origins = { "http://localhost:8080", "http://localhost:8081" }, allowCredentials = "true")
 @RequiredArgsConstructor
 public class InventoryController {
     private final InventoryService service;
@@ -32,8 +32,7 @@ public class InventoryController {
             InventorySearchCriteria criteria,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size,
-            @RequestParam(defaultValue = "recent") String sort
-    ) {
+            @RequestParam(defaultValue = "recent") String sort) {
         Slice<InventoryDTO> results = service.searchInventory(criteria, page, size, sort);
 
         Map<String, Slice<InventoryDTO>> response = new HashMap<>();
@@ -42,15 +41,14 @@ public class InventoryController {
     }
 
     @GetMapping("/inventory/{id}")
-    public InventoryDTO getInventoryById(@PathVariable Long id) {
+    public InventoryDTO getInventoryById(@PathVariable String id) {
         return service.getInventoryById(id);
     }
 
     @GetMapping("/inventory/export")
     public ResponseEntity<InputStreamResource> exportInventory(
             InventorySearchCriteria criteria,
-            @RequestParam(defaultValue = "recent") String sort
-    ) {
+            @RequestParam(defaultValue = "recent") String sort) {
         Slice<InventoryDTO> pageResults = service.searchInventory(criteria, 0, 100000, sort);
         java.io.ByteArrayInputStream in = excelService.exportInventoryToExcel(pageResults.getContent());
 
@@ -59,7 +57,8 @@ public class InventoryController {
 
         return ResponseEntity.ok()
                 .headers(headers)
-                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .contentType(
+                        MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(new InputStreamResource(in));
     }
 

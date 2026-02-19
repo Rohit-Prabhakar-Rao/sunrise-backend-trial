@@ -50,7 +50,7 @@ public class Inventory {
     @Column(name = "\"PO\"")
     private String purchaseOrder;
 
-    @Column(name = "whname")
+    @Column(name = "\"whname\"")
     private String warehouseName;
 
     @Column(name = "\"LocationGroup\"")
@@ -59,23 +59,23 @@ public class Inventory {
     @Formula("""
         (
             CASE 
-                WHEN COALESCE((SELECT SUM(a."Qty") FROM "tblAllocation" a WHERE a."PanID" = "PanID" AND a."InventoryID" IS NULL), 0) > 0
+                WHEN COALESCE((SELECT SUM(a."Qty") FROM "tblallocation" a WHERE a."PanID" = "PanID" AND a."InventoryID" IS NULL), 0) > 0
                 THEN (
-                    (SELECT SUM(i2."WeightLeft") FROM "tblInventory" i2 WHERE i2."PanID" = "PanID") - 
-                    COALESCE((SELECT SUM(a."Qty") FROM "tblAllocation" a WHERE a."PanID" = "PanID" AND a."InventoryID" IS NULL), 0) - 
-                    COALESCE((SELECT SUM(a."Qty") FROM "tblAllocation" a WHERE a."InventoryID" = "InventoryID"), 0)
+                    (SELECT SUM(i2."WeightLeft") FROM "tblinventory" i2 WHERE i2."PanID" = "PanID") - 
+                    COALESCE((SELECT SUM(a."Qty") FROM "tblallocation" a WHERE a."PanID" = "PanID" AND a."InventoryID" IS NULL), 0) - 
+                    COALESCE((SELECT SUM(a."Qty") FROM "tblallocation" a WHERE a."InventoryID" = "InventoryID"), 0)
                 )
                 ELSE (
                     "WeightLeft" - 
                     (
-                        COALESCE((SELECT SUM(a."Qty") FROM "tblAllocation" a WHERE a."PanID" = "PanID" AND a."InventoryID" IS NULL), 0) + 
-                        COALESCE((SELECT SUM(a."Qty") FROM "tblAllocation" a WHERE a."InventoryID" = "InventoryID"), 0)
+                        COALESCE((SELECT SUM(a."Qty") FROM "tblallocation" a WHERE a."PanID" = "PanID" AND a."InventoryID" IS NULL), 0) + 
+                        COALESCE((SELECT SUM(a."Qty") FROM "tblallocation" a WHERE a."InventoryID" = "InventoryID"), 0)
                     )
                 )
             END
         )
     """)
-    private Double availableQty;
+    private String availableQty;
 
     @Formula("""
         (CASE 
@@ -87,7 +87,7 @@ public class Inventory {
             ELSE "MI_A"
         END)
     """)
-    private Double meltIndex;
+    private String meltIndex;
 
     @Formula("""
         (CASE 
@@ -99,7 +99,7 @@ public class Inventory {
             ELSE "Density_A"
         END)
     """)
-    private Double density;
+    private String density;
 
     @Formula("""
         (CASE 
@@ -111,12 +111,12 @@ public class Inventory {
             ELSE "Izod_A"
         END)
     """)
-    private Double izodImpact;
+    private String izodImpact;
 
-    @Column(name = "rc_compartment")
+    @Column(name = "\"rc_compartment\"")
     private String rcCompartment;
 
-    @Column(name = "sComment")
+    @Column(name = "\"sComment\"")
     private String comment;
 
     @Column(name = "\"Packing\"")

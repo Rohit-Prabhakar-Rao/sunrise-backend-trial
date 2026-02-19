@@ -14,7 +14,7 @@ public class InventoryDTO {
     private String id;
 
     // Core IDs
-    private Long panId;
+    private String panId;
     private LocalDateTime panDate;
     private Long inventoryId;
 
@@ -25,17 +25,17 @@ public class InventoryDTO {
     private String containerNum;
 
     // Product Info
-    private Long folderId;
+    private String folderId;
     private String folderCode;
     private Integer lot;
     private String lotName;
     private String comment;
 
-    private Long PolymerId;
+    private String PolymerId;
     private String polymerCode;
     private Integer formId;
     private String formCode;
-    private Long gradeId;
+    private String gradeId;
     private String gradeCode;
 
     // Packing
@@ -46,9 +46,9 @@ public class InventoryDTO {
     private Integer partialLoad;
 
     // Metadata
-    private Long descriptorId;
+    private String descriptorId;
     private String descriptor;
-    private Long brandId;
+    private String brandId;
     private String brand;
 
     // Warehouse
@@ -63,16 +63,16 @@ public class InventoryDTO {
     // Allocation Math
     private Integer panLevelAllocated;
     private Integer inventoryLevelAllocated;
-    private Double totalAllocated;
+    private String totalAllocated;
     private Double availableQty;
-    private Integer allocationCount;
+    private String allocationCount;
     private String allocationStatus;
     private Integer overAllocatedBy;
 
     // Technical Specs
-    private Double mi;
-    private Double density;
-    private Double izod;
+    private String mi;
+    private String density;
+    private String izod;
 
     // Images (List of URL strings)
     private List<String> images;

@@ -92,7 +92,7 @@ public class InventoryService {
         return new PageImpl<>(dtos, pageable, fastPage.getTotalElements());
     }
 
-    public InventoryDTO getInventoryById(Long id) {
+    public InventoryDTO getInventoryById(String id) {
         return viewRepository.findFirstByPanId(id)
                 .map(mapper::toDTO)
                 .orElseThrow(() -> new RuntimeException("Inventory item not found with PanID: " + id));

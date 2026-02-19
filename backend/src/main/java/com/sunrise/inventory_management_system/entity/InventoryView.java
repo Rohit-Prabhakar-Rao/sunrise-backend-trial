@@ -19,7 +19,7 @@ public class InventoryView {
     private Long inventoryId;
 
     @Column(name = "\"PanID\"")
-    private Long panId;
+    private String panId;
 
     @Column(name = "\"PanDate\"")
     private LocalDateTime panDate;
@@ -30,52 +30,52 @@ public class InventoryView {
     @Column(name = "\"InventoryLevelAllocated\"")
     private int inventoryLevelAllocated;
 
-    @Column(name = "\"FolderId\"")
-    private Long folderId;
+    @Column(name = "\"FolderID\"")
+    private String folderId;
 
     @Column(name = "\"FolderCode\"")
     private String folderCode;
 
     // --- Product Info ---
     @Column(name = "\"PolymerID\"")
-    private Long polymerId;
+    private String polymerId;
 
     @Column(name = "\"PolymerCode\"")
     private String polymerCode;
 
     @Column(name = "\"GradeID\"")
-    private Long gradeId;
+    private String gradeId;
 
     @Column(name = "\"GradeCode\"")
     private String gradeCode;
 
     @Column(name = "\"BrandID\"")
-    private Long brandId;
+    private String brandId;
 
     @Column(name = "\"Brand\"")
     private String brand;
 
-    @Column(name = "\"FormId\"")
+    @Column(name = "\"FormID\"")
     private Integer formId;
 
     @Column(name = "\"FormCode\"")
     private String formCode;
 
     @Column(name = "\"DescriptorID\"")
-    private Long descriptorId;
+    private String descriptorId;
 
     @Column(name = "\"Descriptor\"")
     private String descriptor;
 
     // --- Technical Specs ---
     @Column(name = "\"MI\"")
-    private Double meltIndex;
+    private String meltIndex;
 
     @Column(name = "\"Density\"")
-    private Double density;
+    private String density;
 
     @Column(name = "\"Izod\"")
-    private Double izodImpact;
+    private String izodImpact;
 
     @Column(name = "\"sComment\"")
     private String comment;
@@ -85,7 +85,7 @@ public class InventoryView {
     private int weightLeft;
 
     @Column(name = "\"TotalAllocated\"")
-    private Double totalAllocated;
+    private String totalAllocated;
 
     @Column(name = "\"AvailableQty\"")
     private Double availableQty;
@@ -94,7 +94,7 @@ public class InventoryView {
     private String allocationStatus;
 
     @Column(name = "\"AllocationCount\"")
-    private int allocationCount;
+    private String allocationCount;
 
     @Column(name = "\"OverAllocatedBy\"")
     private int overAllocatedBy;
@@ -133,10 +133,10 @@ public class InventoryView {
     private String inventoryLevelCustomerCodes;
 
     // --- Logistics ---
-    @Column(name = "wh")
+    @Column(name = "\"wh\"")
     private int warehouse;
 
-    @Column(name = "whname")
+    @Column(name = "\"whname\"")
     private String warehouseName;
 
     @Column(name = "\"WHsection\"")
@@ -160,10 +160,10 @@ public class InventoryView {
     @Column(name = "\"SupplierCode\"")
     private String supplierCode;
 
-    @Column(name = "supplierId")
+    @Column(name = "\"SupplierID\"")
     private int supplierId;
 
-    @Column(name = "rc_compartment")
+    @Column(name = "\"rc_compartment\"")
     private String rcCompartment;
 
     // -- Packing --
@@ -183,9 +183,9 @@ public class InventoryView {
     private int packageNumber;
 
     // --- Images ---
-    @Column(name = "\"images\"")
+    @Column(name = "\"Images\"")
     private String images;
 
-    @Column(name = "\"sampleImages\"")
+    @Column(name = "\"SampleImages\"")
     private String imageFiles;
 }
