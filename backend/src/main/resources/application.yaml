@@ -1,33 +1,25 @@
 server:
-  port: ${PORT:3000}  # Defaults to 3000, can be overridden
+  port: ${PORT:3000}
 
 spring:
   profiles:
-    active: dev
+    # Change this to 'prod' or remove it to stop forcing the 'dev' profile
+    active: prod
   application:
     name: inventory-management-system
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          # Variable: KEYCLOAK_ISSUER_URI
-          # No default value -> Forces you to set it in Env/GitLab
-          issuer-uri: ${KEYCLOAK_ISSUER_URI}
-          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI}
+
+  # Bypass Security for now to ensure the database connects first
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration
 
   datasource:
-    # Variable: DB_HOST (Defaults to localhost if not set)
-    # Variable: DB_NAME (Defaults to SunriseIGZ)
-    url: jdbc:sqlserver://${DB_HOST:localhost}:1433;databaseName=${DB_NAME:SunriseIGZ};encrypt=true;trustServerCertificate=true;
-
-    # Variable: DB_USERNAME (Defaults to sa)
-    username: ${DB_USERNAME:sa}
-
-    # CRITICAL: DB_PASSWORD (No default value = Secure)
-    # The app will fail to start if you don't provide this, which is good.
-    password: ${DB_PASSWORD}
-
-    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    # Use the Neon URL you provided earlier
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://ep-fragrant-sound-aicvtx0b-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require}
+    username: ${SPRING_DATASOURCE_USERNAME:neondb_owner}
+    password: ${SPRING_DATASOURCE_PASSWORD:npg_c3NIOqXZPLp4}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
@@ -38,12 +30,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.SQLServerDialect
-
-logging:
-  level:
-    org.springframework.web: INFO
-    org.hibernate: INFO
+        # MUST be PostgreSQLDialect for Neon
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 smb:
   server:

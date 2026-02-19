@@ -1,41 +1,109 @@
+#server:
+#  port: 3000
+#  ssl: # we need to remove this (we added for making keycloak https and added fake certificate for making it https) also the truststore file present in resources
+#    bundle:
+#      jks:
+#        keycloak-trust:
+#          trust-store: classpath:truststore.p12
+#          trust-store-password: changeit
+#          trust-store-type: PKCS12
+#
+#spring:
+#  application:
+#    name: inventory-management-system
+#  security:
+#    oauth2:
+#      resourceserver:
+#        jwt:
+#          # MUST match the Issuer in your React app and the ngrok tunnel
+#          issuer-uri:  https://localhost:8443/realms/sunrise-realm
+#          # Backend needs to fetch public keys from the secure ngrok link
+#          jwk-set-uri:  https://localhost:8443/realms/sunrise-realm/protocol/openid-connect/certs
+#
+#  datasource:
+#    url: jdbc:sqlserver://localhost:1433;databaseName=SunriseIGZ;encrypt=true;trustServerCertificate=true;
+#    username: sa
+#    password: StrongPassword123!
+#    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+#
+#  jpa:
+#    hibernate:
+#      ddl-auto: none
+#      naming:
+#        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+#    show-sql: true
+#    properties:
+#      hibernate:
+#        format_sql: true
+#        dialect: org.hibernate.dialect.SQLServerDialect
+#
+#logging:
+#  level:
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+#
+#smb:
+#  server:
+#    ip: "172.17.96.1"
+#  share:
+#    name: "SunriseImages"
+#  username: "Rohit Prabhakar"
+#  password: "Flamekaiser@1411"
+#  domain: ""
+
 server:
-  port: ${PORT:8080}
-  # SSL section removed: Render handles SSL/HTTPS at the load balancer level automatically.
+  port: 3000
+  # Keep SSL only if you are specifically testing Keycloak HTTPS locally
+  # Otherwise, comment out the SSL block to simplify troubleshooting
 
 spring:
   application:
     name: inventory-management-system
-  
-  # Disable the automatic security lookup that was causing the crash
-  autoconfigure:
-    exclude: 
-      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
-      - org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration
+  security:
+      oauth2:
+        resourceserver:
+          jwt:
+            # MUST match the Issuer in your React app and the ngrok tunnel
+            issuer-uri:  https://localhost:8443/realms/sunrise-realm
+            # Backend needs to fetch public keys from the secure ngrok link
+            jwk-set-uri:  https://localhost:8443/realms/sunrise-realm/protocol/openid-connect/certs
 
-  datasource:
-    # These will be pulled from Render Environment Variables
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-    driver-class-name: org.postgresql.Driver
+  spring:
+    datasource:
+      # Notice: I removed the user and password from the URL string itself
+      url: jdbc:postgresql://ep-fragrant-sound-aicvtx0b-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require
+      username: neondb_owner
+      password: npg_c3NIOqXZPLp4
+      driver-class-name: org.postgresql.Driver
 
-  jpa:
-    hibernate:
-      ddl-auto: none
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-    show-sql: true
-    properties:
+    jpa:
+      database-platform: org.hibernate.dialect.PostgreSQLDialect
       hibernate:
-        format_sql: true
-        # Changed dialect from SQLServer to PostgreSQL
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        ddl-auto: none
+      show-sql: true
+      properties:
+        hibernate:
+          format_sql: true
+          # This ensures Hibernate speaks Postgres and not SQL Server
+          dialect: org.hibernate.dialect.PostgreSQLDialect
 
+    # IMPORTANT: Keep this here so the app doesn't crash
+    # trying to find Keycloak on localhost:8443
+    autoconfigure:
+      exclude:
+        - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+        - org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration
+
+# Keep your logging and SMB sections as they were
 logging:
   level:
     org.hibernate.SQL: DEBUG
 
-# If SMB is for local image access, it may not work on Render unless the IP is public.
 smb:
   server:
-    ip: ${SMB_IP:172.17.96.1}
+    ip: "172.17.96.1"
+  share:
+    name: "SunriseImages"
+  username: "Rohit Prabhakar"
+  password: "Flamekaiser@1411"
+  domain: ""
