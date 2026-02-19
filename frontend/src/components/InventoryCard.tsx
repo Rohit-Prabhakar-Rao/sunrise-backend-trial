@@ -85,32 +85,13 @@ export const InventoryCard = ({
 
       {/* MEDIA SECTION */}
       <div className="aspect-video bg-muted/20 relative overflow-hidden border-b border-border z-0">
-        {hasImages ? (
-          /* inset-0 ensures the carousel fills the relative parent completely */
-          <Carousel className="w-full h-full absolute inset-0 z-10">
-            <CarouselContent className="h-full -ml-0">
-              {item.sampleImages.map((imageUrl, index) => (
-                <CarouselItem key={index} className="pl-0 basis-full h-full">
-                  <img
-                    src={imageUrl}
-                    alt={`${item.polymerCode} sample`}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            {item.sampleImages.length > 1 && (
-              <div onClick={(e) => e.stopPropagation()} className="z-40">
-                <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/70 hover:bg-background/90 z-40" />
-                <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/70 hover:bg-background/90 z-40" />
-              </div>
-            )}
-          </Carousel>
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/5 to-accent/5">
-            <Package className="h-16 w-16 text-primary/10 group-hover:scale-110 transition-transform duration-500" />
-          </div>
-        )}
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/5 to-accent/5">
+          <img
+            src="/images/Pellets-1.jpg"
+            alt="Product Image"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        </div>
 
         {/* UI OVERLAYS - All sibling to the Carousel, but higher Z-Index */}
 
@@ -229,19 +210,28 @@ export const InventoryCard = ({
           <div className="flex flex-col items-center">
             <span className="text-[9px] text-muted-foreground font-bold uppercase mb-1">Density</span>
             <span className="text-xs font-bold text-foreground">
-              {item.density?.toFixed(3) || "-"}
+              {(() => {
+                const val = Number(item.density);
+                return !isNaN(val) && item.density != null ? val.toFixed(3) : "-";
+              })()}
             </span>
           </div>
           <div className="flex flex-col items-center border-x border-border/50">
             <span className="text-[9px] text-muted-foreground font-bold uppercase mb-1">MI</span>
             <span className="text-xs font-bold text-foreground">
-              {item.mi ? (item.mi % 1 === 0 ? item.mi : item.mi.toFixed(1)) : "-"}
+              {(() => {
+                const val = Number(item.mi);
+                return !isNaN(val) && item.mi != null ? (val % 1 === 0 ? val : val.toFixed(1)) : "-";
+              })()}
             </span>
           </div>
           <div className="flex flex-col items-center">
             <span className="text-[9px] text-muted-foreground font-bold uppercase mb-1">Izod</span>
             <span className="text-xs font-bold text-foreground">
-              {item.izod !== undefined && item.izod !== null ? (item.izod % 1 === 0 ? item.izod : item.izod.toFixed(1)) : "-"}
+              {(() => {
+                const val = Number(item.izod);
+                return !isNaN(val) && item.izod != null ? (val % 1 === 0 ? val : val.toFixed(1)) : "-";
+              })()}
             </span>
           </div>
         </div>

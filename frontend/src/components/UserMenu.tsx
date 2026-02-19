@@ -1,4 +1,3 @@
-import { useAuth } from "react-oidc-context";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,23 +11,20 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, User, Shield } from "lucide-react";
 
 export function UserMenu() {
-  const auth = useAuth();
-
-  // If not logged in, don't show anything (or show a Login button)
-  if (!auth.isAuthenticated || !auth.user) return null;
-
-  // Get User Details from Token
-  const username = auth.user.profile.preferred_username || "User";
-  const email = auth.user.profile.email || "";
-
-  // Extract Initials (e.g. "Sales Rep" -> "SR")
+  const username = localStorage.getItem("user_name") || "Admin";
   const initials = username.substring(0, 2).toUpperCase();
+
+  const handleLogout = () => {
+    localStorage.removeItem("is_auth");
+    localStorage.removeItem("user_name");
+    window.location.reload(); // Force refresh to show login page
+  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-          <Avatar className="h-9 w-9">
+          <Avatar className="h-9 w-9 border border-border/50 shadow-sm">
             <AvatarFallback className="bg-primary/10 text-primary font-bold">
               {initials}
             </AvatarFallback>
@@ -40,45 +36,27 @@ export function UserMenu() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{username}</p>
-            <p className="text-xs leading-none text-muted-foreground">{email}</p>
+            <p className="text-xs leading-none text-muted-foreground">Local Administrator</p>
           </div>
         </DropdownMenuLabel>
 
         <DropdownMenuSeparator />
 
-        {/* Optional: Show Roles for debugging */}
         <DropdownMenuItem className="cursor-default">
           <Shield className="mr-2 h-4 w-4 text-muted-foreground" />
           <span className="text-xs text-muted-foreground">
-            Role: {(auth.user.profile as any).realm_access?.roles?.[0] || "User"}
+            Privilege: Super Admin
           </span>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
-        {/* LOGOUT BUTTON */}
         <DropdownMenuItem
-          className="text-red-600 focus:text-red-600 cursor-pointer"
-          onClick={() => {
-            // Prepare the logout parameters
-            const logoutParams = {
-              // This is the ADFS logout page
-              // post_logout_redirect_uri: "https://adfs.sunrise.lab/adfs/ls/?wa=wsignout1.0",
-              post_logout_redirect_uri: import.meta.env.VITE_ADFS_LOGOUT_REDIRECT_URI,
-              // This 'hint' tells Keycloak exactly which session to kill so it doesn't ask "Are you sure?"
-              id_token_hint: auth.user?.id_token,
-            };
-
-            // Clear local storage manually to be safe
-            localStorage.clear();
-            sessionStorage.clear();
-
-            // Perform the redirect using the library's built-in method
-            auth.signoutRedirect(logoutParams);
-          }}
+          className="text-red-500 focus:text-red-500 cursor-pointer"
+          onClick={handleLogout}
         >
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
+          <span>Sign Out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

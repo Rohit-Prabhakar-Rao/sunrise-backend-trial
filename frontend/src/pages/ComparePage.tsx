@@ -2,7 +2,6 @@ import { useState, useRef } from "react";
 import { useCartStore } from "@/lib/cartStore";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { useAuth } from "react-oidc-context";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, X, Loader2, Printer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +12,6 @@ import { useReactToPrint } from "react-to-print";
 
 const ComparePage = () => {
     const { items, clearCart, removeItem } = useCartStore();
-    const auth = useAuth();
     const navigate = useNavigate();
 
     // Create the Ref for the area you want to print
@@ -29,13 +27,14 @@ const ComparePage = () => {
         queryKey: ["compare-items", items],
         queryFn: async () => {
             if (items.length === 0) return [];
-            const token = auth.user?.access_token || "";
-            const promises = items.map(cartItem =>
-                api.getInventoryById(cartItem.panId, token)
+            const results = await Promise.allSettled(
+                items.map(cartItem => api.getInventoryById(cartItem.panId, ""))
             );
-            return Promise.all(promises);
+            return results
+                .filter(res => res.status === 'fulfilled')
+                .map(res => (res as PromiseFulfilledResult<any>).value);
         },
-        enabled: items.length > 0 && auth.isAuthenticated,
+        enabled: items.length > 0,
     });
 
     if (items.length === 0) {
@@ -54,30 +53,46 @@ const ComparePage = () => {
     // Define rows to compare
     const specs = [
         { label: "Supplier", key: "supplierCode" },
+        { label: "Polymer", key: "polymerCode" },
         { label: "Grade", key: "gradeCode", highlight: true },
-        { label: "Lot Number", key: "lot", font: "mono" },
         { label: "Form", key: "formCode" },
+        { label: "Brand", key: "brand" },
+        { label: "Lot Number", key: "lot", font: "mono" },
+        { label: "Lot Name", key: "lotName" },
         {
             label: "Melt Index",
             key: "mi",
             unit: "g/10min",
-            format: (v: any) => v != null ? (v % 1 === 0 ? v : v.toFixed(1)) : "-"
+            format: (v: any) => {
+                const num = Number(v);
+                return !isNaN(num) && v != null ? (num % 1 === 0 ? num : num.toFixed(1)) : "-"
+            }
         },
         {
             label: "Density",
             key: "density",
             unit: "g/cm³",
-            format: (v: any) => v != null ? v.toFixed(3) : "-"
+            format: (v: any) => {
+                const num = Number(v);
+                return !isNaN(num) && v != null ? num.toFixed(3) : "-"
+            }
         },
         {
             label: "Izod Impact",
             key: "izod",
             unit: "J/m",
-            format: (v: any) => v != null ? (v % 1 === 0 ? v : v.toFixed(1)) : "-"
+            format: (v: any) => {
+                const num = Number(v);
+                return !isNaN(num) && v != null ? (num % 1 === 0 ? num : num.toFixed(1)) : "-"
+            }
         },
-        { label: "Qty Available", key: "availableQty", format: (v: any) => v?.toLocaleString() + " kg", bold: true },
+        { label: "Available Qty", key: "availableQty", format: (v: any) => v?.toLocaleString() + " kg", bold: true },
         { label: "Warehouse", key: "warehouseName" },
         { label: "Location", key: "locationGroup" },
+        { label: "PO #", key: "po" },
+        { label: "Container #", key: "containerNum" },
+        { label: "Packing", key: "packing" },
+        { label: "Pan ID", key: "panId" },
     ];
 
     return (
@@ -196,41 +211,15 @@ const ComparePage = () => {
 
 // --- IMAGE GALLERY COMPONENT ---
 const ProductImageGallery = ({ images }: { images: string[] }) => {
-    if (!images || images.length === 0) {
-        return (
-            <div className="h-40 w-full bg-gray-100 rounded-md border border-dashed flex items-center justify-center text-gray-400 text-xs print:h-20">
-                No Image
-            </div>
-        );
-    }
-    const [activeImg, setActiveImg] = useState(images[0]);
-
     return (
         <div className="space-y-2">
-            <div className="h-40 w-full bg-gray-100 rounded-md border flex items-center justify-center overflow-hidden relative print:h-24">
+            <div className="h-40 w-full bg-muted rounded-lg border flex items-center justify-center overflow-hidden relative print:h-24">
                 <img
-                    src={activeImg}
+                    src="/images/Pellets-1.jpg"
                     alt="Product"
                     className="h-full w-full object-cover print:object-contain"
                 />
             </div>
-            {/* Thumbnails (Hidden in Print to save space) */}
-            {images.length > 1 && (
-                <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide print:hidden">
-                    {images.map((img, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => setActiveImg(img)}
-                            className={`flex-shrink-0 h-10 w-10 border rounded overflow-hidden transition-all ${activeImg === img
-                                ? "ring-2 ring-blue-500 ring-offset-1 border-blue-500 opacity-100"
-                                : "border-gray-200 opacity-70 hover:opacity-100"
-                                }`}
-                        >
-                            <img src={img} className="h-full w-full object-cover" />
-                        </button>
-                    ))}
-                </div>
-            )}
         </div>
     );
 };

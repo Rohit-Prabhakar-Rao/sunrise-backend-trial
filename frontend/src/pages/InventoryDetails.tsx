@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "react-oidc-context";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useCartStore } from "@/lib/cartStore";
@@ -26,7 +25,6 @@ import { PageLoader } from "@/components/PageLoader";
 const InventoryDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const auth = useAuth();
   const addItem = useCartStore((state) => state.addItem);
   const [activeImage, setActiveImage] = useState<string | null>(null);
 
@@ -34,10 +32,9 @@ const InventoryDetail = () => {
   const { data: item, isLoading, isError } = useQuery({
     queryKey: ["inventory", id],
     queryFn: async () => {
-      const token = auth.user?.access_token || "";
-      return api.getInventoryById(id!, token);
+      return api.getInventoryById(id!, "");
     },
-    enabled: !!id && auth.isAuthenticated,
+    enabled: !!id,
   });
 
   // 2. Set initial main image
@@ -80,35 +77,14 @@ const InventoryDetail = () => {
         <div className="space-y-4">
           {/* Main Large Image */}
           <div className="aspect-[4/3] bg-muted rounded-lg overflow-hidden border shadow-sm relative">
-            {activeImage ? (
+            <div className="aspect-video rounded-xl bg-muted overflow-hidden border border-border shadow-inner">
               <img
-                src={activeImage}
-                alt="Main Preview"
+                src="/images/Pellets-1.jpg"
+                alt="Product Image"
                 className="w-full h-full object-cover"
               />
-            ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                <Package className="h-20 w-20 opacity-20" />
-              </div>
-            )}
+            </div>
           </div>
-
-          {/* Thumbnail Strip */}
-          {item.sampleImages && item.sampleImages.length > 0 && (
-            <Carousel className="w-full max-w-md mx-auto">
-              <CarouselContent>
-                {item.sampleImages.map((img: string, idx: number) => (
-                  <CarouselItem key={idx} className="basis-1/4 cursor-pointer" onClick={() => setActiveImage(img)}>
-                    <div className={`rounded-md overflow-hidden border-2 aspect-square ${activeImage === img ? 'border-primary' : 'border-transparent'}`}>
-                      <img src={img} className="w-full h-full object-cover" />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
-            </Carousel>
-          )}
         </div>
 
         {/* RIGHT COLUMN: DETAILS */}
@@ -213,14 +189,22 @@ const InventoryDetail = () => {
 };
 
 // Helper Component for Specs
-const SpecRow = ({ label, value, unit, decimals = 2 }: any) => (
-  <div className="flex flex-col">
-    <span className="text-xs text-muted-foreground uppercase">{label}</span>
-    <span className="font-medium">
-      {value != null ? (typeof value === 'number' ? value.toLocaleString(undefined, { maximumFractionDigits: decimals }) : value) : "N/A"}
-      {unit && <span className="text-muted-foreground text-xs ml-1">{unit}</span>}
-    </span>
-  </div>
-);
+const SpecRow = ({ label, value, unit, decimals = 2 }: any) => {
+  const numValue = value !== null && value !== undefined ? Number(value) : NaN;
+  const isNumeric = !isNaN(numValue) && value !== "";
+
+  return (
+    <div className="flex flex-col">
+      <span className="text-xs text-muted-foreground uppercase">{label}</span>
+      <span className="font-medium">
+        {isNumeric
+          ? numValue.toLocaleString(undefined, { maximumFractionDigits: decimals })
+          : (value || "N/A")
+        }
+        {unit && isNumeric && <span className="text-muted-foreground text-xs ml-1">{unit}</span>}
+      </span>
+    </div>
+  );
+};
 
 export default InventoryDetail;

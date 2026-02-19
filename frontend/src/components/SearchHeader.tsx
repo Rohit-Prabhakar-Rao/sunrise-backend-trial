@@ -141,7 +141,6 @@ export const SearchHeader = ({
 
             {/* User Menu */}
             <UserMenu />
-
           </div>
         </div>
       </div>

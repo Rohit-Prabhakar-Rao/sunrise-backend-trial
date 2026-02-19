@@ -270,12 +270,18 @@ export const InventoryTable = ({
         return item.locationGroup || "N/A";
       case "compartment":
         return item.rcCompartment || "N/A";
-      case "density":
-        return item.density != null ? item.density.toFixed(3) : "N/A";
-      case "mi":
-        return item.mi != null ? (item.mi % 1 === 0 ? item.mi : item.mi.toFixed(1)) : "N/A";
-      case "izod":
-        return item.izod != null ? (item.izod % 1 === 0 ? item.izod : item.izod.toFixed(1)) : "N/A";
+      case "density": {
+        const val = Number(item.density);
+        return !isNaN(val) && item.density != null ? val.toFixed(3) : "N/A";
+      }
+      case "mi": {
+        const val = Number(item.mi);
+        return !isNaN(val) && item.mi != null ? (val % 1 === 0 ? val : val.toFixed(1)) : "N/A";
+      }
+      case "izod": {
+        const val = Number(item.izod);
+        return !isNaN(val) && item.izod != null ? (val % 1 === 0 ? val : val.toFixed(1)) : "N/A";
+      }
       case "brand":
         return item.brand || "N/A";
       case "date":
@@ -308,19 +314,25 @@ export const InventoryTable = ({
           </span>
         );
       }
-      case "overAllocatedBy":
-        if (item.overAllocatedBy > 0) {
+      case "overAllocatedBy": {
+        const val = Number(item.overAllocatedBy);
+        if (!isNaN(val) && val > 0) {
           return (
             <span className="font-semibold text-red-700 dark:text-red-400">
-              {item.overAllocatedBy.toLocaleString()}
+              {val.toLocaleString()}
             </span>
           );
         }
         return "—";
-      case "packLeft":
-        return item.packLeft ? item.packLeft.toLocaleString() : "N/A";
-      case "weightLeft":
-        return item.weightLeft ? item.weightLeft.toLocaleString() : "N/A";
+      }
+      case "packLeft": {
+        const val = Number(item.packLeft);
+        return !isNaN(val) && item.packLeft != null ? val.toLocaleString() : "N/A";
+      }
+      case "weightLeft": {
+        const val = Number(item.weightLeft);
+        return !isNaN(val) && item.weightLeft != null ? val.toLocaleString() : "N/A";
+      }
       case "comment":
         return item.comment || "N/A";
       case "allocatedCustomers": {

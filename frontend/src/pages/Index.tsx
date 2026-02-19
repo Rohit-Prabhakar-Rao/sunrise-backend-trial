@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { useAuth } from "react-oidc-context";
 import { FilterSidebar } from "@/components/FilterSidebar";
 import { SearchHeader } from "@/components/SearchHeader";
 import { InventoryCard } from "@/components/InventoryCard";
@@ -24,7 +23,6 @@ const Index = () => {
   const [sortBy, setSortBy] = useState("recent");
   const [cardConfig, setCardConfig] = useState<CardFieldConfig>(loadConfig());
   const [loaderState, setLoaderState] = useState<{ message: string; timestamp: number } | null>(null);
-  const auth = useAuth();
 
   const {
     viewMode, setViewMode,
@@ -132,10 +130,8 @@ const Index = () => {
   const { data: filterOptions } = useQuery({
     queryKey: ['filterOptions'],
     queryFn: async () => {
-      const token = auth.user?.access_token || "";
-      return api.getFilters(token);
+      return api.getFilters("");
     },
-    enabled: auth.isAuthenticated,
     staleTime: 1000 * 60 * 15,
   });
 
@@ -148,18 +144,15 @@ const Index = () => {
   } = useQuery({
     queryKey: ['inventory', appliedFilters, debouncedSort, page],
     queryFn: async () => {
-      const token = auth.user?.access_token || "";
-      return api.getInventory({ ...appliedFilters, sortBy: debouncedSort }, page, token);
+      return api.getInventory({ ...appliedFilters, sortBy: debouncedSort }, page, "");
     },
-    enabled: auth.isAuthenticated,
     placeholderData: keepPreviousData,
   });
 
   const handleExport = async () => {
     try {
       toast.info("Preparing Excel file...");
-      const token = auth.user?.access_token || "";
-      await api.exportInventory({ ...appliedFilters }, debouncedSort, token);
+      await api.exportInventory({ ...appliedFilters }, debouncedSort, "");
       toast.success("Download started!");
     } catch (e) {
       toast.error("Export failed.");
