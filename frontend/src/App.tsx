@@ -55,7 +55,7 @@ const AppContent = () => {
       setIsAuthenticated(true);
       toast.success("Welcome, Administrator");
     } else {
-      toast.error("Invalid credentials. Try admin / admin123");
+      toast.error("Invalid credentials!!!");
     }
   };
 
