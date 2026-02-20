@@ -129,8 +129,9 @@ export const FilterSidebar = ({
   }
 
   const hasGrades = grades.length > 0;
-  const hasDensity = true;
-  const hasIzod = true;
+  const hasDensity = !!filterOptions?.densityRange;
+  const hasIzod = !!filterOptions?.izodRange;
+  const hasMi = !!filterOptions?.miRange;
 
   useEffect(() => {
     saveFilterOrder(filterOrder);
@@ -407,6 +408,7 @@ export const FilterSidebar = ({
         );
 
       case "mi":
+        if (!hasMi) return null;
         return (
           <Collapsible
             key="mi"
@@ -607,6 +609,7 @@ export const FilterSidebar = ({
         );
 
       case "density":
+        if (!hasDensity) return null;
         return (
           <Collapsible
             key="density"
@@ -674,6 +677,7 @@ export const FilterSidebar = ({
         );
 
       case "izod":
+        if (!hasIzod) return null;
         return (
           <Collapsible
             key="izod"
@@ -821,30 +825,36 @@ export const FilterSidebar = ({
               <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${expandedGroups.includes("qualityControl") ? "rotate-180" : ""}`} />
             </CollapsibleTrigger>
             <CollapsibleContent className="px-3 pb-3 pt-1 animate-collapsible-down space-y-3">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="qc-mi"
-                  checked={filters.qualityControl.mi}
-                  onCheckedChange={(checked) => updateFilter("qualityControl", { ...filters.qualityControl, mi: checked === true })}
-                />
-                <Label htmlFor="qc-mi" className="text-xs font-normal cursor-pointer">MI (Strict N/A only)</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="qc-izod"
-                  checked={filters.qualityControl.izod}
-                  onCheckedChange={(checked) => updateFilter("qualityControl", { ...filters.qualityControl, izod: checked === true })}
-                />
-                <Label htmlFor="qc-izod" className="text-xs font-normal cursor-pointer">Izod Impact (Strict N/A only)</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="qc-density"
-                  checked={filters.qualityControl.density}
-                  onCheckedChange={(checked) => updateFilter("qualityControl", { ...filters.qualityControl, density: checked === true })}
-                />
-                <Label htmlFor="qc-density" className="text-xs font-normal cursor-pointer">Density (Strict N/A only)</Label>
-              </div>
+              {hasMi && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="qc-mi"
+                    checked={filters.qualityControl.mi}
+                    onCheckedChange={(checked) => updateFilter("qualityControl", { ...filters.qualityControl, mi: checked === true })}
+                  />
+                  <Label htmlFor="qc-mi" className="text-xs font-normal cursor-pointer">MI (Strict N/A only)</Label>
+                </div>
+              )}
+              {hasIzod && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="qc-izod"
+                    checked={filters.qualityControl.izod}
+                    onCheckedChange={(checked) => updateFilter("qualityControl", { ...filters.qualityControl, izod: checked === true })}
+                  />
+                  <Label htmlFor="qc-izod" className="text-xs font-normal cursor-pointer">Izod Impact (Strict N/A only)</Label>
+                </div>
+              )}
+              {hasDensity && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="qc-density"
+                    checked={filters.qualityControl.density}
+                    onCheckedChange={(checked) => updateFilter("qualityControl", { ...filters.qualityControl, density: checked === true })}
+                  />
+                  <Label htmlFor="qc-density" className="text-xs font-normal cursor-pointer">Density (Strict N/A only)</Label>
+                </div>
+              )}
             </CollapsibleContent>
           </Collapsible>
         );

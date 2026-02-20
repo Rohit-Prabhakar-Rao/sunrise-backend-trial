@@ -35,8 +35,21 @@ class ApiClient {
     return response.json();
   }
 
-  async getInventoryById(id: string, token: string): Promise<any> {
-    return this.request(`/inventory/${id}`, token);
+  async getInventoryById(
+    id: string,
+    token: string,
+    polymer?: string,
+    form?: string,
+    folder?: string,
+    lot?: string
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    if (polymer) params.append('polymer', polymer);
+    if (form) params.append('form', form);
+    if (folder) params.append('folder', folder);
+    if (lot) params.append('lot', lot);
+
+    return this.request(`/inventory/${id}?${params.toString()}`, token);
   }
 
   // --- EXPORT FUNCTION ---

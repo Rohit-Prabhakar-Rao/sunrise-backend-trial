@@ -32,6 +32,7 @@ const Index = () => {
   } = useInventoryUiStore();
 
   const addItem = useCartStore((state) => state.addItem);
+  const cartItemsCount = useCartStore((state) => state.items.length);
 
   const [pendingFilters, setPendingFilters] = useState<FilterState>(appliedFilters);
   const debouncedSort = useDebounce(sortBy, 500);
@@ -40,7 +41,6 @@ const Index = () => {
     setPendingFilters(appliedFilters);
   }, [appliedFilters]);
 
-  // Effect to automatically clear manual loader messages after a minimum visible duration
   useEffect(() => {
     if (loaderState) {
       const timer = setTimeout(() => setLoaderState(null), 300);
@@ -54,7 +54,6 @@ const Index = () => {
 
   const handleApplyFilters = () => {
     triggerLoader("Applying filters...");
-    // Apply all filters EXCEPT the seaarch query (keep currently ACTIVE search)
     setAppliedFilters({
       ...pendingFilters,
       searchQuery: appliedFilters.searchQuery
@@ -65,7 +64,6 @@ const Index = () => {
 
   const handleSearchExecute = () => {
     triggerLoader("Searching items...");
-    // Only update the search query, keeping already APPLIED sidebar filters
     setAppliedFilters({
       ...appliedFilters,
       searchQuery: pendingFilters.searchQuery
@@ -99,7 +97,6 @@ const Index = () => {
       },
     };
 
-    // Reset BOTH pending and applied states immediately
     setPendingFilters(initialFilters);
     setAppliedFilters(initialFilters);
     setSortBy("recent");
@@ -113,18 +110,26 @@ const Index = () => {
 
     let addedCount = 0;
     selectedItems.forEach(item => {
-      addItem({
+      const success = addItem({
         id: item.id,
         panId: item.panId ? item.panId.toString() : "N/A",
+        polymer: item.polymerCode,
+        form: item.formCode,
+        folder: item.folderCode,
+        lotName: item.lotName,
         lot: item.lot ? item.lot.toString() : "N/A",
         grade: item.gradeCode || "Unknown",
         quantity: item.availableQty || 0
       });
-      addedCount++;
+      if (success) addedCount++;
     });
 
-    toast.success(`Added ${addedCount} items to compare`);
-    clearSelection();
+    if (addedCount > 0) {
+      toast.success(`Added ${addedCount} item${addedCount > 1 ? 's' : ''} to compare`);
+      clearSelection();
+    } else {
+      toast.error("No new items could be added to the cart.");
+    }
   };
 
   const { data: filterOptions } = useQuery({
@@ -159,15 +164,10 @@ const Index = () => {
     }
   };
 
-  // --- EXTRACT TOTALS ---
   const inventoryItems = data?.data || [];
   const totalElements = data?.totalElements || 0;
   const totalPages = Math.ceil(totalElements / PAGE_SIZE);
 
-  const hasNextPage = page < totalPages - 1;
-
-  // Show loader overlay when fetching new results 
-  // Priority: manual loader message > isFetching/isPlaceholder > initial load
   const activeLoaderMessage = loaderState?.message || (isFetching || isPlaceholderData ? "Updating results..." : (isLoading && !data ? "Loading inventory..." : null));
   const isTransitioning = !!activeLoaderMessage;
   const loaderKey = loaderState ? `loader-${loaderState.timestamp}` : (isFetching ? 'fetching' : (isLoading ? 'loading' : 'none'));
@@ -192,7 +192,6 @@ const Index = () => {
             setSortBy(val);
             triggerLoader("Sorting results...");
           }}
-          // --- UPDATE HEADER COUNT ---
           resultCount={totalElements}
           searchQuery={pendingFilters.searchQuery}
           onSearchChange={(query) => setPendingFilters({ ...pendingFilters, searchQuery: query })}
@@ -215,7 +214,6 @@ const Index = () => {
             </div>
           )}
           {!isError && (() => {
-            // Check if any filter OTHER than searchQuery is different
             const { searchQuery: pSearch, ...pRest } = pendingFilters;
             const { searchQuery: aSearch, ...aRest } = appliedFilters;
             const isSidebarDirty = JSON.stringify(pRest) !== JSON.stringify(aRest);
@@ -287,9 +285,14 @@ const Index = () => {
       {/* Floating Cart Button */}
       {selectedItems.length > 0 && (
         <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-50 bg-foreground text-background px-6 py-3 rounded-full shadow-xl flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4">
-          <span className="font-semibold text-sm">
-            {selectedItems.length} item{selectedItems.length > 1 ? 's' : ''} selected
-          </span>
+          <div className="flex flex-col">
+            <span className="font-bold text-sm leading-none text-white">
+              {selectedItems.length} selected
+            </span>
+            <span className="text-[10px] text-white/60 font-medium mt-1">
+              Cart total: {cartItemsCount}/4
+            </span>
+          </div>
           <div className="h-4 w-[1px] bg-background/30"></div>
           <Button
             size="sm"
@@ -298,13 +301,13 @@ const Index = () => {
             className="gap-2"
           >
             <ShoppingCart className="h-4 w-4" />
-            Add to Compare Cart
+            Add to Compare
           </Button>
           <button
             onClick={() => clearSelection()}
             className="ml-2 hover:bg-white/20 p-1 rounded-full transition-colors"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4 text-white" />
           </button>
         </div>
       )}

@@ -28,7 +28,14 @@ const ComparePage = () => {
         queryFn: async () => {
             if (items.length === 0) return [];
             const results = await Promise.allSettled(
-                items.map(cartItem => api.getInventoryById(cartItem.panId, ""))
+                items.map(cartItem => api.getInventoryById(
+                    cartItem.panId,
+                    "",
+                    cartItem.polymer,
+                    cartItem.form,
+                    cartItem.folder,
+                    cartItem.lotName
+                ))
             );
             return results
                 .filter(res => res.status === 'fulfilled')
@@ -126,11 +133,14 @@ const ComparePage = () => {
                 <div ref={contentRef} className="print-container border rounded-xl bg-card shadow-lg overflow-hidden relative">
 
                     {/* PDF HEADER: Visible only when printing */}
-                    <div className="hidden print:block p-6 pb-2 border-b mb-4">
-                        <h1 className="text-xl font-bold text-gray-900">Sunrise Inventory Report</h1>
-                        <p className="text-xs text-gray-500">
-                            Generated on {new Date().toLocaleDateString()}
-                        </p>
+                    <div className="hidden print:flex p-6 pb-4 border-b mb-6 items-center justify-between">
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900">Inventory Comparison Report</h1>
+                            <p className="text-xs text-gray-500 mt-1">
+                                Generated on {new Date().toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                            </p>
+                        </div>
+                        <img src="/images/sunrise_logo.png" alt="Sunrise Logo" className="h-12 w-auto object-contain" />
                     </div>
 
                     {/* ScrollArea with PRINT overrides */}
@@ -141,11 +151,8 @@ const ComparePage = () => {
                                 <thead>
                                     <tr className="border-b bg-muted/50">
                                         {/* ATTRIBUTE HEADER */}
-                                        <th className="p-4 w-[200px] print:w-[100px] sticky left-0 bg-muted/50 z-20 border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] align-top pt-12 print:static print:shadow-none print:pt-4">
+                                        <th className="p-4 w-[200px] print:w-[120px] sticky left-0 bg-muted/50 z-20 border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] align-top pt-6 print:static print:shadow-none print:pt-4">
                                             <span className="font-bold text-foreground text-lg print:text-sm">Properties</span>
-                                            <p className="text-xs text-muted-foreground font-normal mt-1 print:hidden">
-                                                Compare specs side-by-side
-                                            </p>
                                         </th>
 
                                         {/* PRODUCT COLUMNS */}
@@ -160,17 +167,13 @@ const ComparePage = () => {
                                                     <X className="h-4 w-4" />
                                                 </button>
 
-                                                <div className="space-y-3">
-                                                    <div>
-                                                        <div className="text-lg font-bold text-foreground leading-tight print:text-sm">
-                                                            {item.polymerCode}
-                                                        </div>
-                                                        <Badge variant="secondary" className="mt-1 font-mono text-xs border-gray-200 print:text-[10px] print:px-1">
-                                                            {item.gradeCode}
-                                                        </Badge>
+                                                <div>
+                                                    <div className="text-lg font-bold text-foreground leading-tight print:text-sm">
+                                                        {item.polymerCode}
                                                     </div>
-
-                                                    <ProductImageGallery images={item.sampleImages} />
+                                                    <Badge variant="secondary" className="mt-1 font-mono text-xs border-gray-200 print:text-[10px] print:px-1">
+                                                        {item.gradeCode}
+                                                    </Badge>
                                                 </div>
                                             </th>
                                         ))}
@@ -178,6 +181,17 @@ const ComparePage = () => {
                                 </thead>
 
                                 <tbody className="divide-y">
+                                    {/* IMAGE ROW - Moved here to prevent repeating in PDF headers */}
+                                    <tr className="print:break-inside-avoid">
+                                        <td className="p-4 font-medium text-muted-foreground sticky left-0 bg-card z-10 border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] print:static print:shadow-none">
+                                            Product Image
+                                        </td>
+                                        {fullItems?.map((item: any) => (
+                                            <td key={item.inventoryId} className="p-4 border-r">
+                                                <ProductImageGallery images={item.sampleImages} />
+                                            </td>
+                                        ))}
+                                    </tr>
                                     {specs.map((spec, idx) => (
                                         <tr key={spec.key} className={`group hover:bg-primary/5 transition-colors ${spec.highlight ? "bg-primary/10" : ""}`}>
                                             <td className="p-4 font-medium text-muted-foreground sticky left-0 bg-card z-10 border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] group-hover:bg-primary/5 print:static print:shadow-none">

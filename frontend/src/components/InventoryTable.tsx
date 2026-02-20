@@ -97,7 +97,7 @@ export const InventoryTable = ({
       newSort = `${targetField},${newDir}`;
     } else {
       // Default new sort based on type (numbers/dates typically desc first)
-      const descByDefault = ["availableQty", "panDate", "density", "mi", "izod"];
+      const descByDefault = ["availableQty", "panDate", "density", "meltIndex", "izodImpact"];
       const defaultDir = descByDefault.includes(targetField) ? "desc" : "asc";
       newSort = `${targetField},${defaultDir}`;
     }
@@ -115,8 +115,8 @@ export const InventoryTable = ({
       warehouseName: "warehouseName",
       location: "locationGroup",
       density: "density",
-      mi: "mi",
-      izod: "izod",
+      mi: "meltIndex",
+      izod: "izodImpact",
       brand: "brand",
       date: "panDate",
       lot: "lot",
@@ -463,7 +463,7 @@ export const InventoryTable = ({
                   style={{ animationDelay: `${items.indexOf(item) * 30}ms`, animationFillMode: 'both' }}
                 >
                   {/* Row Checkbox */}
-                  <TableCell className="w-[50px] px-4 py-2 text-center align-middle">
+                  <TableCell className="w-[50px] px-4 py-2 text-center align-middle" onClick={(e) => e.stopPropagation()}>
                     <Checkbox
                       checked={isSelected}
                       onCheckedChange={(checked) => handleSelectRow(item.id, checked as boolean)}

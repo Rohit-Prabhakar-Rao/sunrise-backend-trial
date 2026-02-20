@@ -2,16 +2,20 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 export interface CartItem {
-  id: string; // The Inventory ID or Pan ID (need to check)
+  id: string; // React-side unique ID
   panId: string;
-  lot: string;
+  polymer?: string;
+  form?: string;
+  folder?: string;
+  lotName?: string;
+  lot: string; // The lot number as string for display
   grade: string;
   quantity: number;
 }
 
 interface CartState {
   items: CartItem[];
-  addItem: (item: CartItem) => void;
+  addItem: (item: CartItem) => boolean;
   removeItem: (id: string) => void;
   clearCart: () => void;
 }
@@ -20,14 +24,21 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
-      
+
       addItem: (newItem) => {
         const currentItems = get().items;
         // Check if already in cart
         if (currentItems.find(i => i.id === newItem.id)) {
-            return; // Already added, do nothing (or update qty)
+          return false; // Already added
         }
+
+        if (currentItems.length >= 4) {
+          import('sonner').then(({ toast }) => toast.error("Comparison cart is full (Max 4 items)"));
+          return false;
+        }
+
         set({ items: [...currentItems, newItem] });
+        return true;
       },
 
       removeItem: (id) => {

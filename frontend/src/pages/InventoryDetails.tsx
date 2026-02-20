@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useCartStore } from "@/lib/cartStore";
@@ -13,26 +13,25 @@ import {
   Package, FileText, Ruler, Warehouse
 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 import { PageLoader } from "@/components/PageLoader";
 
 const InventoryDetail = () => {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const addItem = useCartStore((state) => state.addItem);
   const [activeImage, setActiveImage] = useState<string | null>(null);
 
+  const polymer = searchParams.get("polymer") || "";
+  const form = searchParams.get("form") || "";
+  const folder = searchParams.get("folder") || "";
+  const lot = searchParams.get("lot") || "";
+
   // 1. Fetch Data
   const { data: item, isLoading, isError } = useQuery({
-    queryKey: ["inventory", id],
+    queryKey: ["inventory", id, polymer, form, folder, lot],
     queryFn: async () => {
-      return api.getInventoryById(id!, "");
+      return api.getInventoryById(id!, "", polymer, form, folder, lot);
     },
     enabled: !!id,
   });

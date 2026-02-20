@@ -17,7 +17,6 @@ import {
 import { InventoryItem } from "@/lib/inventoryData";
 import { CardFieldConfig } from "@/components/CardConfigDialog";
 import { format } from "date-fns";
-// Removed useNavigate import
 import { cn } from "@/lib/utils";
 
 interface InventoryCardProps {
@@ -187,7 +186,7 @@ export const InventoryCard = ({
             <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight mb-1">Quantity</span>
             <div className="flex items-baseline gap-1">
               <span className="text-xs font-bold text-foreground">{item.availableQty.toLocaleString()}</span>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">{item.packing?.split(' ')[1] || 'LBS'}</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">{'LBS'}</span>
             </div>
           </div>
           <div className="bg-accent/5 rounded-lg p-2.5 border border-accent/10 flex flex-col justify-center min-w-0">

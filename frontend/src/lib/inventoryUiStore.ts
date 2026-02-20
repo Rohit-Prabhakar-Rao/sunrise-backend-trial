@@ -58,10 +58,20 @@ export const useInventoryUiStore = create<InventoryUiState>((set) => ({
     if (exists) {
       return { selectedItems: state.selectedItems.filter((i) => i.id !== item.id) };
     } else {
+      if (state.selectedItems.length >= 4) {
+        import('sonner').then(({ toast }) => toast.error("Maximum 4 items can be selected for comparison"));
+        return { selectedItems: state.selectedItems };
+      }
       return { selectedItems: [...state.selectedItems, item] };
     }
   }),
-  setSelection: (items) => set({ selectedItems: items }),
+  setSelection: (items) => set((state) => {
+    if (items.length > 4) {
+      import('sonner').then(({ toast }) => toast.error("Maximum 4 items can be selected for comparison"));
+      return { selectedItems: items.slice(0, 4) };
+    }
+    return { selectedItems: items };
+  }),
   clearSelection: () => set({ selectedItems: [] }),
 
   filters: defaultFilters,
