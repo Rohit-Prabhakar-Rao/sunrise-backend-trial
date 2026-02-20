@@ -190,17 +190,11 @@ export const InventoryCard = ({
             </div>
           </div>
           <div className="bg-accent/5 rounded-lg p-2.5 border border-accent/10 flex flex-col justify-center min-w-0">
-            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight mb-1">Warehouse</span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center gap-1.5 min-w-0 cursor-help">
-                  <span className="text-xs font-bold text-foreground truncate">
-                    {warehouseFull}
-                  </span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>{warehouseFull}</TooltipContent>
-            </Tooltip>
+            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight mb-1">Weight Left</span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-xs font-bold text-foreground">{(item.weightLeft || 0).toLocaleString()}</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">{'LBS'}</span>
+            </div>
           </div>
         </div>
 
@@ -268,6 +262,17 @@ export const InventoryCard = ({
               <span className="font-medium">{item.locationGroup || "-"}</span>
             </div>
           )}
+          {config.warehouse && (
+            <div className="flex justify-between border-b border-border/10 pb-1 min-w-0">
+              <span className="text-muted-foreground uppercase text-[9px] shrink-0 font-bold">Warehouse</span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="font-medium truncate ml-4 cursor-help">{item.warehouseName || "N/A"}</span>
+                </TooltipTrigger>
+                <TooltipContent>{item.warehouseName || "N/A"}</TooltipContent>
+              </Tooltip>
+            </div>
+          )}
           {config.lotName && item.lot && (
             <div className="flex justify-between border-b border-border/10 pb-1 min-w-0">
               <span className="text-muted-foreground uppercase text-[9px] shrink-0 font-bold">Lot Number</span>
@@ -330,12 +335,7 @@ export const InventoryCard = ({
               <span className="font-medium">{item.packLeft}</span>
             </div>
           )}
-          {config.weightLeft && item.weightLeft != null && (
-            <div className="flex justify-between border-b border-border/10 pb-1">
-              <span className="text-muted-foreground uppercase text-[9px] font-bold">Weight Left</span>
-              <span className="font-medium">{item.weightLeft.toLocaleString()}</span>
-            </div>
-          )}
+
           {config.allocationIds && item.allocatedAllocationIds && (
             <div className="flex justify-between border-b border-border/10 pb-1 min-w-0">
               <span className="text-muted-foreground uppercase text-[9px] shrink-0 font-bold">Allocation IDs</span>
