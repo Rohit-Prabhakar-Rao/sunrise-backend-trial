@@ -75,43 +75,37 @@ public class Inventory {
             END
         )
     """)
-    private String availableQty;
+    private Double availableQty;
 
     @Formula("""
-        (CASE 
-            WHEN "rc_compartment" IS NULL OR "rc_compartment" = '' THEN "MI_A"
-            WHEN "rc_compartment" = 'CA' THEN "MI_CA"
-            WHEN "rc_compartment" = 'CB' THEN "MI_CB"
-            WHEN "rc_compartment" = 'B' THEN "MI_B"
-            WHEN "rc_compartment" = 'A' THEN "MI_A"
-            ELSE "MI_A"
-        END)
-    """)
-    private String meltIndex;
+    (CASE 
+        WHEN "rc_compartment" = 'CA' THEN NULLIF(TRIM("MI_CA"), '')
+        WHEN "rc_compartment" = 'CB' THEN NULLIF(TRIM("MI_CB"), '')
+        WHEN "rc_compartment" = 'B'  THEN NULLIF(TRIM("MI_B"), '')
+        ELSE NULLIF(TRIM("MI_A"), '')
+    END)::double precision
+""")
+    private Double meltIndex;
 
     @Formula("""
-        (CASE 
-            WHEN "rc_compartment" IS NULL OR "rc_compartment" = '' THEN "Density_A"
-            WHEN "rc_compartment" = 'CA' THEN "Density_CA"
-            WHEN "rc_compartment" = 'CB' THEN "Density_CB"
-            WHEN "rc_compartment" = 'B' THEN "Density_B"
-            WHEN "rc_compartment" = 'A' THEN "Density_A"
-            ELSE "Density_A"
-        END)
-    """)
-    private String density;
+    (CASE 
+        WHEN "rc_compartment" = 'CA' THEN NULLIF(TRIM("Density_CA"), '')
+        WHEN "rc_compartment" = 'CB' THEN NULLIF(TRIM("Density_CB"), '')
+        WHEN "rc_compartment" = 'B'  THEN NULLIF(TRIM("Density_B"), '')
+        ELSE NULLIF(TRIM("Density_A"), '')
+    END)::double precision
+""")
+    private Double density;
 
     @Formula("""
-        (CASE 
-            WHEN "rc_compartment" IS NULL OR "rc_compartment" = '' THEN "Izod_A"
-            WHEN "rc_compartment" = 'CA' THEN "Izod_CA"
-            WHEN "rc_compartment" = 'CB' THEN "Izod_CB"
-            WHEN "rc_compartment" = 'B' THEN "Izod_B"
-            WHEN "rc_compartment" = 'A' THEN "Izod_A"
-            ELSE "Izod_A"
-        END)
-    """)
-    private String izodImpact;
+    (CASE 
+        WHEN "rc_compartment" = 'CA' THEN NULLIF(TRIM("Izod_CA"), '')
+        WHEN "rc_compartment" = 'CB' THEN NULLIF(TRIM("Izod_CB"), '')
+        WHEN "rc_compartment" = 'B'  THEN NULLIF(TRIM("Izod_B"), '')
+        ELSE NULLIF(TRIM("Izod_A"), '')
+    END)::double precision
+""")
+    private Double izodImpact;
 
     @Column(name = "\"rc_compartment\"")
     private String rcCompartment;

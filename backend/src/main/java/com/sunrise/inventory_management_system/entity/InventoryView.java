@@ -19,7 +19,7 @@ public class InventoryView {
     private Long inventoryId;
 
     @Column(name = "\"PanID\"")
-    private String panId;
+    private Long panId;
 
     @Column(name = "\"PanDate\"")
     private LocalDateTime panDate;
@@ -69,13 +69,13 @@ public class InventoryView {
 
     // --- Technical Specs ---
     @Column(name = "\"MI\"")
-    private String meltIndex;
+    private Double meltIndex;
 
     @Column(name = "\"Density\"")
-    private String density;
+    private Double density;
 
     @Column(name = "\"Izod\"")
-    private String izodImpact;
+    private Double izodImpact;
 
     @Column(name = "\"sComment\"")
     private String comment;
@@ -168,7 +168,7 @@ public class InventoryView {
 
     // -- Packing --
     @Column(name = "\"PackID\"")
-    private int packId;
+    private Integer packId;
 
     @Column(name = "\"Packing\"")
     private String packing;
@@ -180,7 +180,7 @@ public class InventoryView {
     private int partialLoad;
 
     @Column(name = "\"Package\"")
-    private int packageNumber;
+    private Integer packageNumber;
 
     // --- Images ---
     @Column(name = "\"Images\"")

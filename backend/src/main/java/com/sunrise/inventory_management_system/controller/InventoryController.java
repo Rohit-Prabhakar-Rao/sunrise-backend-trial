@@ -41,8 +41,13 @@ public class InventoryController {
     }
 
     @GetMapping("/inventory/{id}")
-    public InventoryDTO getInventoryById(@PathVariable String id) {
-        return service.getInventoryById(id);
+    public InventoryDTO getInventoryById(
+            @PathVariable String id,
+            @RequestParam(required = false) String polymer,
+            @RequestParam(required = false) String form,
+            @RequestParam(required = false) String folder,
+            @RequestParam(required = false) String lot) {
+        return service.getInventoryById(id, polymer, form, folder, lot);
     }
 
     @GetMapping("/inventory/export")

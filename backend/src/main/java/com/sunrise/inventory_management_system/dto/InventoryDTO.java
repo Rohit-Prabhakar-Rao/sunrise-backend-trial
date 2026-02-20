@@ -14,7 +14,7 @@ public class InventoryDTO {
     private String id;
 
     // Core IDs
-    private String panId;
+    private Long panId;
     private LocalDateTime panDate;
     private Long inventoryId;
 
@@ -70,9 +70,9 @@ public class InventoryDTO {
     private Integer overAllocatedBy;
 
     // Technical Specs
-    private String mi;
-    private String density;
-    private String izod;
+    private Double mi;
+    private Double density;
+    private Double izod;
 
     // Images (List of URL strings)
     private List<String> images;

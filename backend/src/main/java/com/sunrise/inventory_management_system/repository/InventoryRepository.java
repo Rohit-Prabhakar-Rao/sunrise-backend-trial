@@ -7,12 +7,20 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface InventoryRepository extends
                 JpaRepository<InventoryView, Long>,
                 JpaSpecificationExecutor<InventoryView> {
         java.util.Optional<InventoryView> findFirstByPanId(String panId);
+        Optional<InventoryView> findFirstByPanIdAndPolymerCodeAndFormCodeAndFolderCodeAndLotName(
+                String panId,
+                String polymer,
+                String form,
+                String folder,
+                String lot
+        );
 
         @Query("SELECT DISTINCT i.supplierCode FROM InventoryView i WHERE i.supplierCode IS NOT NULL ORDER BY i.supplierCode")
         List<String> findDistinctSuppliers();

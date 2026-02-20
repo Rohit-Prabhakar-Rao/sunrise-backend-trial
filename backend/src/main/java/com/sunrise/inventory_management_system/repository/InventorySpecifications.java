@@ -15,19 +15,76 @@ public class InventorySpecifications {
 
             // 1. Text Search
             if (criteria.getSearchText() != null && !criteria.getSearchText().isEmpty()) {
-                String likePattern = "%" + criteria.getSearchText().toLowerCase() + "%";
+                String originalSearch = criteria.getSearchText().toLowerCase();
+                String likePattern = "%" + originalSearch + "%";
+                String normalizedSearch = originalSearch.replace("-", "").replace(" ", "");
+                String likePatternNormalized = "%" + normalizedSearch + "%";
 
+                // Text fields are fine with lower()
                 Predicate polymerMatch = cb.like(cb.lower(root.get("polymerCode")), likePattern);
                 Predicate gradeMatch = cb.like(cb.lower(root.get("gradeCode")), likePattern);
                 Predicate brandMatch = cb.like(cb.lower(root.get("brand")), likePattern);
                 Predicate supplierMatch = cb.like(cb.lower(root.get("supplierCode")), likePattern);
-
-                // Cast numbers to string for text search
-                Predicate poMatch = cb.like(root.get("purchaseOrder").as(String.class), likePattern);
-                Predicate containerMatch = cb.like(root.get("containerNum").as(String.class), likePattern);
-
                 Predicate lotNameMatch = cb.like(cb.lower(root.get("lotName")), likePattern);
-                predicates.add(cb.or(polymerMatch, gradeMatch, brandMatch, poMatch, containerMatch, supplierMatch, lotNameMatch));
+
+                // Enhancement: Search for joined/formatted Polymer-Form
+                var polyFormPath = cb.concat(cb.concat(cb.lower(root.get("polymerCode")), "-"),
+                        cb.lower(root.get("formCode")));
+                var polyFormJoinedPath = cb.concat(cb.lower(root.get("polymerCode")), cb.lower(root.get("formCode")));
+                var polyFormSpacePath = cb.concat(cb.concat(cb.lower(root.get("polymerCode")), " "),
+                        cb.lower(root.get("formCode")));
+                Predicate polyFormMatch = cb.or(
+                        cb.like(polyFormPath, likePattern),
+                        cb.like(polyFormJoinedPath, likePattern),
+                        cb.like(polyFormSpacePath, likePattern),
+                        cb.like(polyFormJoinedPath, likePatternNormalized));
+
+                // Enhancement: Search for joined/formatted Folder-Lot
+                var folderLotPath = cb.concat(cb.concat(cb.lower(root.get("folderCode")), "-"),
+                        cb.lower(root.get("lotName")));
+                var folderLotJoinedPath = cb.concat(cb.lower(root.get("folderCode")), cb.lower(root.get("lotName")));
+                var folderLotSpacePath = cb.concat(cb.concat(cb.lower(root.get("folderCode")), " "),
+                        cb.lower(root.get("lotName")));
+
+                // Matches "Folder-LotNum" (using the numeric lot ID)
+                var folderLotNumPath = cb.concat(cb.concat(cb.lower(root.get("folderCode")), "-"),
+                        root.get("lot").as(String.class));
+                var folderLotNumJoinedPath = cb.concat(cb.lower(root.get("folderCode")),
+                        root.get("lot").as(String.class));
+
+                Predicate folderLotMatch = cb.or(
+                        cb.like(folderLotPath, likePattern),
+                        cb.like(folderLotJoinedPath, likePattern),
+                        cb.like(folderLotSpacePath, likePattern),
+                        cb.like(folderLotNumPath, likePattern),
+                        cb.like(folderLotNumJoinedPath, likePattern),
+                        cb.like(folderLotJoinedPath, likePatternNormalized),
+                        cb.like(folderLotNumJoinedPath, likePatternNormalized));
+
+                // Enhancement: Search for joined/formatted Polymer-Lot (e.g. PSD-2250281)
+                var polyLotPath = cb.concat(cb.concat(cb.lower(root.get("polymerCode")), "-"),
+                        cb.lower(root.get("lotName")));
+                var polyLotJoinedPath = cb.concat(cb.lower(root.get("polymerCode")), cb.lower(root.get("lotName")));
+                var polyLotSpacePath = cb.concat(cb.concat(cb.lower(root.get("polymerCode")), " "),
+                        cb.lower(root.get("lotName")));
+                Predicate polyLotMatch = cb.or(
+                        cb.like(polyLotPath, likePattern),
+                        cb.like(polyLotJoinedPath, likePattern),
+                        cb.like(polyLotSpacePath, likePattern),
+                        cb.like(polyLotJoinedPath, likePatternNormalized));
+
+                // Enhancement: Search for joined/formatted Polymer-Grade
+                var polyGradePath = cb.concat(cb.concat(cb.lower(root.get("polymerCode")), "-"),
+                        cb.lower(root.get("gradeCode")));
+                var polyGradeJoinedPath = cb.concat(cb.lower(root.get("polymerCode")), cb.lower(root.get("gradeCode")));
+                Predicate polyGradeMatch = cb.or(
+                        cb.like(polyGradePath, likePattern),
+                        cb.like(polyGradeJoinedPath, likePattern),
+                        cb.like(polyGradeJoinedPath, likePatternNormalized));
+
+                // Add all combinations to the final OR block
+                predicates.add(cb.or(polymerMatch, gradeMatch, brandMatch, supplierMatch, lotNameMatch,
+                        polyFormMatch, folderLotMatch, polyLotMatch, polyGradeMatch));
             }
 
             // 2. Multi-Select Filters (IN Clauses)
@@ -70,7 +127,8 @@ public class InventorySpecifications {
                     hasRange = true;
                 }
 
-                Predicate rangePredicate = miConditions.isEmpty() ? null : cb.and(miConditions.toArray(new Predicate[0]));
+                Predicate rangePredicate = miConditions.isEmpty() ? null
+                        : cb.and(miConditions.toArray(new Predicate[0]));
 
                 if (Boolean.TRUE.equals(criteria.getIncludeNAMI()) && rangePredicate != null) {
                     predicates.add(cb.or(rangePredicate, cb.isNull(root.get("meltIndex"))));
@@ -90,7 +148,8 @@ public class InventorySpecifications {
                 if (criteria.getMaxDensity() != null)
                     densityConditions.add(cb.lessThanOrEqualTo(root.get("density"), criteria.getMaxDensity()));
 
-                Predicate rangePredicate = densityConditions.isEmpty() ? null : cb.and(densityConditions.toArray(new Predicate[0]));
+                Predicate rangePredicate = densityConditions.isEmpty() ? null
+                        : cb.and(densityConditions.toArray(new Predicate[0]));
 
                 if (Boolean.TRUE.equals(criteria.getIncludeNADensity()) && rangePredicate != null) {
                     predicates.add(cb.or(rangePredicate, cb.isNull(root.get("density"))));
@@ -110,7 +169,8 @@ public class InventorySpecifications {
                 if (criteria.getMaxIzod() != null)
                     izodConditions.add(cb.lessThanOrEqualTo(root.get("izodImpact"), criteria.getMaxIzod()));
 
-                Predicate rangePredicate = izodConditions.isEmpty() ? null : cb.and(izodConditions.toArray(new Predicate[0]));
+                Predicate rangePredicate = izodConditions.isEmpty() ? null
+                        : cb.and(izodConditions.toArray(new Predicate[0]));
 
                 if (Boolean.TRUE.equals(criteria.getIncludeNAIzod()) && rangePredicate != null) {
                     predicates.add(cb.or(rangePredicate, cb.isNull(root.get("izodImpact"))));
@@ -119,11 +179,24 @@ public class InventorySpecifications {
                 }
             }
             // --- Quantity ---
-            if (criteria.getMinQty() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("availableQty"), criteria.getMinQty()));
+            if (criteria.getMinQty() != null && !criteria.getMinQty().toString().isEmpty()) {
+                try {
+                    // Convert the String input to a Double
+                    Double minVal = Double.valueOf(criteria.getMinQty().toString());
+                    predicates.add(cb.greaterThanOrEqualTo(root.get("availableQty"), minVal));
+                } catch (NumberFormatException e) {
+                    // Ignore or log if the user typed something that isn't a number
+                }
             }
-            if (criteria.getMaxQty() != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("availableQty"), criteria.getMaxQty()));
+
+            if (criteria.getMaxQty() != null && !criteria.getMaxQty().toString().isEmpty()) {
+                try {
+                    // Convert the String input to a Double
+                    Double maxVal = Double.valueOf(criteria.getMaxQty().toString());
+                    predicates.add(cb.lessThanOrEqualTo(root.get("availableQty"), maxVal));
+                } catch (NumberFormatException e) {
+                    // Handle invalid number format
+                }
             }
             if (criteria.getStartDate() != null) {
                 // Assuming your entity field is named "date" or "createdDate"

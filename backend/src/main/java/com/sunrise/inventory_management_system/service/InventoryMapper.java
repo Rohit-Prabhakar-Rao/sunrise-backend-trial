@@ -11,8 +11,10 @@ import java.util.stream.Collectors;
 @Component
 public class InventoryMapper {
     private static final String IMAGE_API_BASE = "http://localhost:3000/api/images/";
+
     public InventoryDTO toDTO(InventoryView entity) {
-        if (entity == null) return null;
+        if (entity == null)
+            return null;
 
         return InventoryDTO.builder()
                 .id("pan-" + entity.getPanId() + "-inv-" + entity.getInventoryId())

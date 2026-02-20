@@ -98,6 +98,23 @@ public class InventoryService {
                 .orElseThrow(() -> new RuntimeException("Inventory item not found with PanID: " + id));
     }
 
+    public InventoryDTO getInventoryById(String id, String polymer, String form, String folder, String lot) {
+        // 1. Try Specific Match if we have the detail params
+        if (polymer != null && !polymer.isEmpty() && form != null && !form.isEmpty()) {
+            Optional<InventoryView> match = viewRepository
+                    .findFirstByPanIdAndPolymerCodeAndFormCodeAndFolderCodeAndLotName(
+                            id, polymer, form, folder, lot);
+            if (match.isPresent()) {
+                return mapper.toDTO(match.get());
+            }
+        }
+
+        // 2. Fallback to just PanID if missing params or no specific match found
+        return viewRepository.findFirstByPanId(id)
+                .map(mapper::toDTO)
+                .orElseThrow(() -> new RuntimeException("Inventory item not found with PanID: " + id));
+    }
+
     @Cacheable("filter-options")
     public Map<String, List<String>> getFilterValues() {
         Map<String, List<String>> filters = new HashMap<>();
@@ -111,23 +128,24 @@ public class InventoryService {
 
         // 2. Fetch Ranges (MI, Density, Izod)
         // Results are: [0]=minMi, [1]=maxMi, [2]=minDen, [3]=maxDen, [4]=minIzod,
-        // [5]=maxIzod
+        // [5]=maxIzod, [6]=minDate, [7]=maxDate
         Object[] ranges = viewRepository.findGlobalSpecRanges();
 
-        // Handle potential nulls safely (if DB is empty)
         if (ranges != null && ranges.length > 0 && ranges[0] instanceof Object[]) {
             Object[] row = (Object[]) ranges[0];
 
-            filters.put("miRange", toRangeList(row[0], row[1], "0.0", "100.0"));
-            filters.put("densityRange", toRangeList(row[2], row[3], "0.0", "2.0"));
-            filters.put("izodRange", toRangeList(row[4], row[5], "0.0", "20.0"));
+            if (row[0] != null || row[1] != null) {
+                filters.put("miRange", toRangeList(row[0], row[1], "0.0", "100.0"));
+            }
+            if (row[2] != null || row[3] != null) {
+                filters.put("densityRange", toRangeList(row[2], row[3], "0.0", "2.0"));
+            }
+            if (row[4] != null || row[5] != null) {
+                filters.put("izodRange", toRangeList(row[4], row[5], "0.0", "20.0"));
+            }
+
             String defaultDate = java.time.LocalDate.now().toString();
             filters.put("dateRange", toRangeList(row[6], row[7], defaultDate, defaultDate));
-        } else {
-            // Fallback defaults
-            filters.put("miRange", List.of("0.0", "100.0"));
-            filters.put("densityRange", List.of("0.0", "2.0"));
-            filters.put("izodRange", List.of("0.0", "20.0"));
         }
         return filters;
     }
