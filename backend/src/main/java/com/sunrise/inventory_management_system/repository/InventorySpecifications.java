@@ -16,75 +16,45 @@ public class InventorySpecifications {
             // 1. Text Search
             if (criteria.getSearchText() != null && !criteria.getSearchText().isEmpty()) {
                 String originalSearch = criteria.getSearchText().toLowerCase();
-                String likePattern = "%" + originalSearch + "%";
-                String normalizedSearch = originalSearch.replace("-", "").replace(" ", "");
-                String likePatternNormalized = "%" + normalizedSearch + "%";
+
+                // Normalize input: remove all separators
+                String cleanSearch = originalSearch.replaceAll("[-/. ]", "");
+                String likePattern = "%" + cleanSearch + "%";
 
                 // Text fields are fine with lower()
-                Predicate polymerMatch = cb.like(cb.lower(root.get("polymerCode")), likePattern);
-                Predicate gradeMatch = cb.like(cb.lower(root.get("gradeCode")), likePattern);
-                Predicate brandMatch = cb.like(cb.lower(root.get("brand")), likePattern);
                 Predicate supplierMatch = cb.like(cb.lower(root.get("supplierCode")), likePattern);
-                Predicate lotNameMatch = cb.like(cb.lower(root.get("lotName")), likePattern);
 
-                // Enhancement: Search for joined/formatted Polymer-Form
-                var polyFormPath = cb.concat(cb.concat(cb.lower(root.get("polymerCode")), "-"),
-                        cb.lower(root.get("formCode")));
-                var polyFormJoinedPath = cb.concat(cb.lower(root.get("polymerCode")), cb.lower(root.get("formCode")));
-                var polyFormSpacePath = cb.concat(cb.concat(cb.lower(root.get("polymerCode")), " "),
-                        cb.lower(root.get("formCode")));
-                Predicate polyFormMatch = cb.or(
-                        cb.like(polyFormPath, likePattern),
-                        cb.like(polyFormJoinedPath, likePattern),
-                        cb.like(polyFormSpacePath, likePattern),
-                        cb.like(polyFormJoinedPath, likePatternNormalized));
+                // Helper to normalize a DB column: REPLACE(REPLACE(REPLACE(LOWER(col), '-', ''), ' ', ''), '/', '')
+                // We create a function expression that strips separators from the column
+                java.util.function.Function<jakarta.persistence.criteria.Expression<String>, jakarta.persistence.criteria.Expression<String>> normalizeCol = (path) -> {
+                    var lowerCol = cb.lower(path);
+                    var noHyphen = cb.function("replace", String.class, lowerCol, cb.literal("-"), cb.literal(""));
+                    var noSpace = cb.function("replace", String.class, noHyphen, cb.literal(" "), cb.literal(""));
+                    var noSlash = cb.function("replace", String.class, noSpace, cb.literal("/"), cb.literal(""));
+                    return noSlash;
+                };
 
-                // Enhancement: Search for joined/formatted Folder-Lot
-                var folderLotPath = cb.concat(cb.concat(cb.lower(root.get("folderCode")), "-"),
-                        cb.lower(root.get("lotName")));
-                var folderLotJoinedPath = cb.concat(cb.lower(root.get("folderCode")), cb.lower(root.get("lotName")));
-                var folderLotSpacePath = cb.concat(cb.concat(cb.lower(root.get("folderCode")), " "),
-                        cb.lower(root.get("lotName")));
+                // 1. Single Field Matches (Normalized)
+                Predicate polymerMatch = cb.like(normalizeCol.apply(root.get("polymerCode")), likePattern);
+                Predicate gradeMatch = cb.like(normalizeCol.apply(root.get("gradeCode")), likePattern);
+                Predicate brandMatch = cb.like(normalizeCol.apply(root.get("brand")), likePattern);
+                Predicate lotNameMatch = cb.like(normalizeCol.apply(root.get("lotName")), likePattern);
 
-                // Matches "Folder-LotNum" (using the numeric lot ID)
-                var folderLotNumPath = cb.concat(cb.concat(cb.lower(root.get("folderCode")), "-"),
-                        root.get("lot").as(String.class));
-                var folderLotNumJoinedPath = cb.concat(cb.lower(root.get("folderCode")),
-                        root.get("lot").as(String.class));
+                // 2. Concatenated Field Matches (Normalized)
+                // This handles "PEPEL" matching polymer="PE" and form="PEL"
+                var polyFormJoined = cb.concat(normalizeCol.apply(root.get("polymerCode")), normalizeCol.apply(root.get("formCode")));
+                var folderLotJoined = cb.concat(normalizeCol.apply(root.get("folderCode")), normalizeCol.apply(root.get("lotName")));
+                var polyLotJoined = cb.concat(normalizeCol.apply(root.get("polymerCode")), normalizeCol.apply(root.get("lotName")));
 
-                Predicate folderLotMatch = cb.or(
-                        cb.like(folderLotPath, likePattern),
-                        cb.like(folderLotJoinedPath, likePattern),
-                        cb.like(folderLotSpacePath, likePattern),
-                        cb.like(folderLotNumPath, likePattern),
-                        cb.like(folderLotNumJoinedPath, likePattern),
-                        cb.like(folderLotJoinedPath, likePatternNormalized),
-                        cb.like(folderLotNumJoinedPath, likePatternNormalized));
-
-                // Enhancement: Search for joined/formatted Polymer-Lot (e.g. PSD-2250281)
-                var polyLotPath = cb.concat(cb.concat(cb.lower(root.get("polymerCode")), "-"),
-                        cb.lower(root.get("lotName")));
-                var polyLotJoinedPath = cb.concat(cb.lower(root.get("polymerCode")), cb.lower(root.get("lotName")));
-                var polyLotSpacePath = cb.concat(cb.concat(cb.lower(root.get("polymerCode")), " "),
-                        cb.lower(root.get("lotName")));
-                Predicate polyLotMatch = cb.or(
-                        cb.like(polyLotPath, likePattern),
-                        cb.like(polyLotJoinedPath, likePattern),
-                        cb.like(polyLotSpacePath, likePattern),
-                        cb.like(polyLotJoinedPath, likePatternNormalized));
-
-                // Enhancement: Search for joined/formatted Polymer-Grade
-                var polyGradePath = cb.concat(cb.concat(cb.lower(root.get("polymerCode")), "-"),
-                        cb.lower(root.get("gradeCode")));
-                var polyGradeJoinedPath = cb.concat(cb.lower(root.get("polymerCode")), cb.lower(root.get("gradeCode")));
-                Predicate polyGradeMatch = cb.or(
-                        cb.like(polyGradePath, likePattern),
-                        cb.like(polyGradeJoinedPath, likePattern),
-                        cb.like(polyGradeJoinedPath, likePatternNormalized));
+                Predicate polyFormMatch = cb.like(polyFormJoined, likePattern);
+                Predicate folderLotMatch = cb.like(folderLotJoined, likePattern);
+                Predicate polyLotMatch = cb.like(polyLotJoined, likePattern);
 
                 // Add all combinations to the final OR block
-                predicates.add(cb.or(polymerMatch, gradeMatch, brandMatch, supplierMatch, lotNameMatch,
-                        polyFormMatch, folderLotMatch, polyLotMatch, polyGradeMatch));
+                predicates.add(cb.or(
+                        polymerMatch, gradeMatch, brandMatch, lotNameMatch,
+                        polyFormMatch, folderLotMatch, polyLotMatch, supplierMatch
+                ));
             }
 
             // 2. Multi-Select Filters (IN Clauses)
